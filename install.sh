@@ -44,11 +44,11 @@ if [ ! -d "$BIN_DIR" ]; then
     mkdir "$BIN_DIR" --parent
 fi
 
-LXQ_SCRIPT="${SCRIPT_DIR}/bin/lxq"
+LXQ_SCRIPT="${SCRIPT_DIR}/src/lxq"
 ln --symbolic "${LXQ_SCRIPT}" "${BIN_DIR}/lxq" || true
 
 echo "Symlinks in place. Run..."
 echo ""
 echo "    lxq --help"
 echo ""
-echo "... for more information."
+echo "... to get started."
