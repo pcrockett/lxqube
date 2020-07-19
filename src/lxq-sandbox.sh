@@ -40,11 +40,13 @@ for dep in "${DEPENDENCIES[@]}"; do
 done
 
 function show_usage() {
-    printf "Usage: %s [command]\n" "${SCRIPT_NAME}" >&2
+    printf "Usage: lxq sandbox [command]\n" >&2
     printf "\n" >&2
     printf "Available commands:\n" >&2
-    printf "  template\t\tManage sandbox templates\n" >&2
-    printf "  sandbox\t\tManage sandboxes\n" >&2
+    printf "  list\t\tList sandboxes\n" >&2
+    printf "  create\tCreate a sandbox\n" >&2
+    printf "  destroy\tDestroy a sandbox\n" >&2
+    printf "  attach\tAttach a terminal to a sandbox\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -69,11 +71,17 @@ function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
         case "$1" in
-            template)
-                LXQ_COMMAND="template"
+            list)
+                LXQ_COMMAND="list"
             ;;
-            sandbox)
-                LXQ_COMMAND="sandbox"
+            create)
+                LXQ_COMMAND="create"
+            ;;
+            destroy)
+                LXQ_COMMAND="destroy"
+            ;;
+            attach)
+                LXQ_COMMAND="attach"
             ;;
         esac
 
@@ -103,23 +111,14 @@ parse_commandline "$@"
 
 if is_set "${LXQ_COMMAND+x}"; then
 
-    readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
-    DEFAULT_CONFIG="${REPO_DIR}/default-config.sh"
-    USER_CONFIG="${REPO_DIR}/user-config.sh"
+    export LXQ_SANDBOX_DIR="${LXQ_REPO_DIR}/sandboxes"
 
-    # shellcheck source=/dev/null
-    . "${DEFAULT_CONFIG}"
-
-    if [ -f "${USER_CONFIG}" ]; then
-        # shellcheck source=/dev/null
-        . "${USER_CONFIG}"
+    if [ ! -d "${LXQ_SANDBOX_DIR}" ]; then
+        mkdir --parent "${LXQ_SANDBOX_DIR}"
     fi
 
-    LXQ_REPO_DIR=$(dirname "${SCRIPT_DIR}")
-    export LXQ_REPO_DIR
-
     shift 1
-    "${SCRIPT_DIR}/lxq-${LXQ_COMMAND}.sh" "$@"
+    "${SCRIPT_DIR}/lxq-sandbox-${LXQ_COMMAND}.sh" "$@"
     exit "${?}"
 fi
 
