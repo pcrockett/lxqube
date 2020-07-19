@@ -44,9 +44,9 @@ function show_usage() {
     printf "\n" >&2
     printf "Available commands:\n" >&2
     printf "  list\t\tList templates\n" >&2
-    printf "  create\t\tCreate a template\n" >&2
-    printf "  destroy\t\tDestroy a template\n" >&2
-    printf "  attach\t\tAttach a terminal to a template\n" >&2
+    printf "  create\tCreate a template\n" >&2
+    printf "  destroy\tDestroy a template\n" >&2
+    printf "  attach\tAttach a terminal to a template\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
