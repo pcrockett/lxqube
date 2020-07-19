@@ -94,6 +94,7 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
 
     lxc-create --name "lxq-templ-${ARG_TEMPLATE_NAME}" \
         --template download \
+        --logpriority "${LXQ_LOG_PRIORITY}" \
         -- \
         --dist "${LXQ_DISTRO}" \
         --arch "${LXQ_ARCH}" \

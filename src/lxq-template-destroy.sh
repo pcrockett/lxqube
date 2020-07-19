@@ -90,7 +90,8 @@ fi;
 
 if is_set "${ARG_TEMPLATE_NAME+x}"; then
     test "$(id -u)" -eq 0 || panic "Must run this script as root."
-    lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
+    lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
 else
     echo "No template name specified."
     show_usage_and_exit

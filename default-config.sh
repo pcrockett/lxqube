@@ -9,3 +9,4 @@ set -Eeuo pipefail
 export LXQ_DISTRO="ubuntu"
 export LXQ_RELEASE="xenial"
 export LXQ_ARCH="amd64"
+export LXQ_LOG_PRIORITY="ERROR"

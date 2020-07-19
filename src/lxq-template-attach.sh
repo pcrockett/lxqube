@@ -95,11 +95,20 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
     systemctl start lxc-net
 
     container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
-    lxc-start "${container_name}"
-    lxc-wait --name "${container_name}" --state RUNNING
-    lxc-attach --name "${container_name}" --clear-env --keep-var TERM
-    lxc-stop "${container_name}"
-    lxc-wait --name "${container_name}" --state STOPPED
+    lxc-start "${container_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-wait --name "${container_name}" \
+        --state RUNNING \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-attach --name "${container_name}" \
+        --clear-env \
+        --keep-var TERM \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-stop "${container_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-wait --name "${container_name}" \
+        --state STOPPED \
+        --logpriority "${LXQ_LOG_PRIORITY}"
 else
     echo "No template name specified."
     show_usage_and_exit
