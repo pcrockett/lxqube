@@ -22,7 +22,7 @@ set -Eeuo pipefail
 
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
-readonly DEPENDENCIES=(lxc-create)
+readonly DEPENDENCIES=(lxc-destroy)
 
 function panic() {
     >&2 echo "Fatal: $*"
@@ -38,7 +38,7 @@ for dep in "${DEPENDENCIES[@]}"; do
 done
 
 function show_usage() {
-    printf "Usage: lxq create [sandbox-name]\n" >&2
+    printf "Usage: lxq template destroy [template-name]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -69,11 +69,11 @@ function parse_commandline() {
                 ARG_HELP="true"
             ;;
             *)
-                if is_set "${ARG_SANDBOX_NAME+x}"; then
+                if is_set "${ARG_TEMPLATE_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
                     show_usage_and_exit
                 else
-                    ARG_SANDBOX_NAME="${1}"
+                    ARG_TEMPLATE_NAME="${1}"
                 fi
             ;;
         esac
@@ -88,17 +88,10 @@ if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi;
 
-if is_set "${ARG_SANDBOX_NAME+x}"; then
-
+if is_set "${ARG_TEMPLATE_NAME+x}"; then
     test "$(id -u)" -eq 0 || panic "Must run this script as root."
-
-    lxc-create --name "${ARG_SANDBOX_NAME}" \
-        --template download \
-        -- \
-        --dist "${LXQ_DISTRO}" \
-        --arch "${LXQ_ARCH}" \
-        --release "${LXQ_RELEASE}"
+    lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
 else
-    echo "No sandbox name specified."
+    echo "No template name specified."
     show_usage_and_exit
 fi

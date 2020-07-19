@@ -20,11 +20,9 @@
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 set -Eeuo pipefail
 
-[[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
-
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
-readonly DEPENDENCIES=()
+readonly DEPENDENCIES=(lxc-create)
 
 function panic() {
     >&2 echo "Fatal: $*"
@@ -40,10 +38,7 @@ for dep in "${DEPENDENCIES[@]}"; do
 done
 
 function show_usage() {
-    printf "Usage: %s [command]\n" "${SCRIPT_NAME}" >&2
-    printf "\n" >&2
-    printf "Available commands:\n" >&2
-    printf "  template\t\tManage sandbox templates\n" >&2
+    printf "Usage: lxq template create [template-name]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -66,28 +61,20 @@ function is_set() {
 
 function parse_commandline() {
 
-    if [ "${#}" -gt "0" ]; then
-        case "$1" in
-            template)
-                LXQ_COMMAND="template"
-            ;;
-        esac
-
-        if is_set "${LXQ_COMMAND+x}"; then
-            return
-        fi
-    fi
-
     while [ "${#}" -gt "0" ]; do
         local consume=1
 
-        case "$1" in
+        case "${1}" in
             -h|-\?|--help)
                 ARG_HELP="true"
             ;;
             *)
-                echo "Unrecognized argument: ${1}"
-                show_usage_and_exit
+                if is_set "${ARG_TEMPLATE_NAME+x}"; then
+                    echo "Unrecognized argument: ${1}"
+                    show_usage_and_exit
+                else
+                    ARG_TEMPLATE_NAME="${1}"
+                fi
             ;;
         esac
 
@@ -97,28 +84,21 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${LXQ_COMMAND+x}"; then
-
-    readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
-    DEFAULT_CONFIG="${REPO_DIR}/default-config.sh"
-    USER_CONFIG="${REPO_DIR}/user-config.sh"
-
-    # shellcheck source=/dev/null
-    . "${DEFAULT_CONFIG}"
-
-    if [ -f "${USER_CONFIG}" ]; then
-        # shellcheck source=/dev/null
-        . "${USER_CONFIG}"
-    fi
-
-    shift 1
-    "${SCRIPT_DIR}/lxq-${LXQ_COMMAND}.sh" "$@"
-    exit "${?}"
-fi
-
 if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi;
 
-echo "No arguments specified."
-show_usage_and_exit
+if is_set "${ARG_TEMPLATE_NAME+x}"; then
+
+    test "$(id -u)" -eq 0 || panic "Must run this script as root."
+
+    lxc-create --name "lxq-templ-${ARG_TEMPLATE_NAME}" \
+        --template download \
+        -- \
+        --dist "${LXQ_DISTRO}" \
+        --arch "${LXQ_ARCH}" \
+        --release "${LXQ_RELEASE}"
+else
+    echo "No template name specified."
+    show_usage_and_exit
+fi

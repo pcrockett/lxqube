@@ -20,9 +20,11 @@
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 set -Eeuo pipefail
 
+[[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
+
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
-readonly DEPENDENCIES=(lxc-destroy)
+readonly DEPENDENCIES=()
 
 function panic() {
     >&2 echo "Fatal: $*"
@@ -38,7 +40,12 @@ for dep in "${DEPENDENCIES[@]}"; do
 done
 
 function show_usage() {
-    printf "Usage: lxq destroy [sandbox-name]\n" >&2
+    printf "Usage: lxq template [command]\n" >&2
+    printf "\n" >&2
+    printf "Available commands:\n" >&2
+    printf "  create\t\tCreate a template\n" >&2
+    printf "  destroy\t\tDestroy a template\n" >&2
+    printf "  attach\t\tAttach a terminal to a template\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -61,20 +68,34 @@ function is_set() {
 
 function parse_commandline() {
 
+    if [ "${#}" -gt "0" ]; then
+        case "$1" in
+            create)
+                LXQ_COMMAND="create"
+            ;;
+            destroy)
+                LXQ_COMMAND="destroy"
+            ;;
+            attach)
+                LXQ_COMMAND="attach"
+            ;;
+        esac
+
+        if is_set "${LXQ_COMMAND+x}"; then
+            return
+        fi
+    fi
+
     while [ "${#}" -gt "0" ]; do
         local consume=1
 
-        case "${1}" in
+        case "$1" in
             -h|-\?|--help)
                 ARG_HELP="true"
             ;;
             *)
-                if is_set "${ARG_SANDBOX_NAME+x}"; then
-                    echo "Unrecognized argument: ${1}"
-                    show_usage_and_exit
-                else
-                    ARG_SANDBOX_NAME="${1}"
-                fi
+                echo "Unrecognized argument: ${1}"
+                show_usage_and_exit
             ;;
         esac
 
@@ -84,14 +105,16 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
+if is_set "${LXQ_COMMAND+x}"; then
+
+    shift 1
+    "${SCRIPT_DIR}/lxq-template-${LXQ_COMMAND}.sh" "$@"
+    exit "${?}"
+fi
+
 if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi;
 
-if is_set "${ARG_SANDBOX_NAME+x}"; then
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
-    lxc-destroy --name "${ARG_SANDBOX_NAME}"
-else
-    echo "No sandbox name specified."
-    show_usage_and_exit
-fi
+echo "No arguments specified."
+show_usage_and_exit
