@@ -42,6 +42,7 @@ function show_usage() {
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
+    printf "  -c, --clone <templ>\tClone an existing template\n" >&2
 }
 
 function show_usage_and_exit() {
@@ -68,6 +69,15 @@ function parse_commandline() {
             -h|-\?|--help)
                 ARG_HELP="true"
             ;;
+            -c|--clone)
+                shift 1
+                if [ "${#}" -gt "0" ]; then
+                    ARG_CLONE="${1}"
+                else
+                    echo "Must specify a template name to clone from."
+                    show_usage_and_exit
+                fi
+            ;;
             *)
                 if is_set "${ARG_TEMPLATE_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
@@ -93,37 +103,50 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
     test "$(id -u)" -eq 0 || panic "Must run this script as root."
 
     container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
-    lxc-create --name "${container_name}" \
-        --template download \
-        --logpriority "${LXQ_LOG_PRIORITY}" \
-        -- \
-        --dist "${LXQ_DISTRO}" \
-        --arch "${LXQ_ARCH}" \
-        --release "${LXQ_RELEASE}"
 
-    lxc-start --name "${container_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
-    lxc-wait --name "${container_name}" \
-        --state "RUNNING" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+    if is_set "${ARG_CLONE+x}"; then
 
-    lxc-attach --name "${container_name}" \
-        --clear-env \
-        --keep-var TERM \
-        --logpriority "${LXQ_LOG_PRIORITY}" \
-        -- \
-        /bin/bash  << EOF
+        parent_container_name="lxq-templ-${ARG_CLONE}"
+        lxc-copy --name "${parent_container_name}" \
+            --newname "${container_name}" \
+            --foreground \
+            --logpriority "${LXQ_LOG_PRIORITY}"
+
+    else
+
+        lxc-create --name "${container_name}" \
+            --template download \
+            --logpriority "${LXQ_LOG_PRIORITY}" \
+            -- \
+            --dist "${LXQ_DISTRO}" \
+            --arch "${LXQ_ARCH}" \
+            --release "${LXQ_RELEASE}"
+
+        lxc-start --name "${container_name}" \
+            --logpriority "${LXQ_LOG_PRIORITY}"
+        lxc-wait --name "${container_name}" \
+            --state "RUNNING" \
+            --logpriority "${LXQ_LOG_PRIORITY}"
+
+        lxc-attach --name "${container_name}" \
+            --clear-env \
+            --keep-var TERM \
+            --logpriority "${LXQ_LOG_PRIORITY}" \
+            -- \
+            /bin/bash  << EOF
 /usr/sbin/useradd --home-dir "/home/${LXQ_CONTAINER_USER}" \
     --create-home \
     --shell /bin/bash \
     "${LXQ_CONTAINER_USER}"
 EOF
 
-    lxc-stop --name "${container_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
-    lxc-wait --name "${container_name}" \
-        --state "STOPPED" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        lxc-stop --name "${container_name}" \
+            --logpriority "${LXQ_LOG_PRIORITY}"
+        lxc-wait --name "${container_name}" \
+            --state "STOPPED" \
+            --logpriority "${LXQ_LOG_PRIORITY}"
+
+    fi
 
 else
     echo "No template name specified."
