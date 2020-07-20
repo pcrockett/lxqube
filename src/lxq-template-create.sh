@@ -92,13 +92,39 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
 
     test "$(id -u)" -eq 0 || panic "Must run this script as root."
 
-    lxc-create --name "lxq-templ-${ARG_TEMPLATE_NAME}" \
+    container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
+    lxc-create --name "${container_name}" \
         --template download \
         --logpriority "${LXQ_LOG_PRIORITY}" \
         -- \
         --dist "${LXQ_DISTRO}" \
         --arch "${LXQ_ARCH}" \
         --release "${LXQ_RELEASE}"
+
+    lxc-start --name "${container_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-wait --name "${container_name}" \
+        --state "RUNNING" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+
+    lxc-attach --name "${container_name}" \
+        --clear-env \
+        --keep-var TERM \
+        --logpriority "${LXQ_LOG_PRIORITY}" \
+        -- \
+        /bin/bash  << EOF
+/usr/sbin/useradd --home-dir "/home/${LXQ_CONTAINER_USER}" \
+    --create-home \
+    --shell /bin/bash \
+    "${LXQ_CONTAINER_USER}"
+EOF
+
+    lxc-stop --name "${container_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-wait --name "${container_name}" \
+        --state "STOPPED" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+
 else
     echo "No template name specified."
     show_usage_and_exit

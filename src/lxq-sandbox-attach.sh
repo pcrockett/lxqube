@@ -100,7 +100,7 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
     . "${sandbox_file}"
 
     template_cont_name="lxq-templ-${LXQ_TEMPLATE_NAME}"
-    sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
+    sandbox_cont_name="lxq-${ARG_SANDBOX_NAME}"
 
     test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Copying ${template_cont_name} to ${sandbox_cont_name}..."
     lxc-copy --name "${template_cont_name}" \
@@ -120,7 +120,9 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
     lxc-attach --name "${sandbox_cont_name}" \
         --clear-env \
         --keep-var TERM \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --logpriority "${LXQ_LOG_PRIORITY}" \
+        -- \
+        sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
 
     test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Stopping ${sandbox_cont_name}..."
     lxc-stop "${sandbox_cont_name}" \
