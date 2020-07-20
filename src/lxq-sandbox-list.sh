@@ -42,6 +42,7 @@ function show_usage() {
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
+    printf "  -r, --running\t\tList running sandboxes\n"
 }
 
 function show_usage_and_exit() {
@@ -68,6 +69,9 @@ function parse_commandline() {
             -h|-\?|--help)
                 ARG_HELP="true"
             ;;
+            -r|--running)
+                ARG_RUNNING="true"
+            ;;
             *)
                 echo "Unrecognized argument: ${1}"
                 show_usage_and_exit
@@ -82,6 +86,11 @@ parse_commandline "$@"
 
 if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
-fi;
+fi
 
-ls "${LXQ_SANDBOX_DIR}"
+if is_set "${ARG_RUNNING+x}"; then
+    test "$(id -u)" -eq 0 || panic "Must run this script as root."
+    lxc-ls --fancy --filter "^lxq-sbox-.+$"
+else
+    ls "${LXQ_SANDBOX_DIR}"
+fi

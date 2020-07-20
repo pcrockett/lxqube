@@ -99,7 +99,7 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
     # shellcheck source=/dev/null
     . "${sandbox_file}"
 
-    sandbox_cont_name="lxq-${ARG_SANDBOX_NAME}"
+    sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
 
     test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Stopping ${sandbox_cont_name}..."
     lxc-stop "${sandbox_cont_name}" \
