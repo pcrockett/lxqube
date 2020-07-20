@@ -42,6 +42,7 @@ function show_usage() {
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
+    printf "  -r, --root\t\tLogin as root\n"
 }
 
 function show_usage_and_exit() {
@@ -67,6 +68,9 @@ function parse_commandline() {
         case "${1}" in
             -h|-\?|--help)
                 ARG_HELP="true"
+            ;;
+            -r|--root)
+                ARG_ROOT="true"
             ;;
             *)
                 if is_set "${ARG_SANDBOX_NAME+x}"; then
@@ -101,12 +105,19 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
 
     sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
 
-    lxc-attach --name "${sandbox_cont_name}" \
-        --clear-env \
-        --keep-var TERM \
-        --logpriority "${LXQ_LOG_PRIORITY}" \
-        -- \
-        sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
+    if is_set "${ARG_ROOT+x}"; then
+        lxc-attach --name "${sandbox_cont_name}" \
+            --clear-env \
+            --keep-var TERM \
+            --logpriority "${LXQ_LOG_PRIORITY}" || true # "|| true" to disregard exit code
+    else
+        lxc-attach --name "${sandbox_cont_name}" \
+            --clear-env \
+            --keep-var TERM \
+            --logpriority "${LXQ_LOG_PRIORITY}" \
+            -- \
+            sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
+    fi
 
 else
     echo "No sandbox name specified."
