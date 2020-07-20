@@ -38,7 +38,7 @@ for dep in "${DEPENDENCIES[@]}"; do
 done
 
 function show_usage() {
-    printf "Usage: lxq sandbox attach [sandbox-name]\n" >&2
+    printf "Usage: lxq sandbox stop [sandbox-name]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -101,12 +101,16 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
 
     sandbox_cont_name="lxq-${ARG_SANDBOX_NAME}"
 
-    lxc-attach --name "${sandbox_cont_name}" \
-        --clear-env \
-        --keep-var TERM \
-        --logpriority "${LXQ_LOG_PRIORITY}" \
-        -- \
-        sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
+    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Stopping ${sandbox_cont_name}..."
+    lxc-stop "${sandbox_cont_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-wait --name "${sandbox_cont_name}" \
+        --state STOPPED \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+
+    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Destroying ${sandbox_cont_name}..."
+    lxc-destroy --name "${sandbox_cont_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
 
 else
     echo "No sandbox name specified."

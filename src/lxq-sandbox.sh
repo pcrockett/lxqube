@@ -45,11 +45,13 @@ function show_usage() {
     printf "Available commands:\n" >&2
     printf "  list\t\tList sandboxes\n" >&2
     printf "  create\tCreate a sandbox\n" >&2
-    printf "  destroy\tDestroy a sandbox\n" >&2
+    printf "  start\t\tStart a sandbox\n" >&2
     printf "  attach\tAttach a terminal to a sandbox\n" >&2
+    printf "  stop\t\tStop a sandbox\n" >&2
+    printf "  destroy\tDestroy a sandbox\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
-    printf "  -h, --help\t\tShow help message then exit\n" >&2
+    printf "  -h, --help\tShow help message then exit\n" >&2
 }
 
 function show_usage_and_exit() {
@@ -77,11 +79,17 @@ function parse_commandline() {
             create)
                 LXQ_COMMAND="create"
             ;;
-            destroy)
-                LXQ_COMMAND="destroy"
+            start)
+                LXQ_COMMAND="start"
             ;;
             attach)
                 LXQ_COMMAND="attach"
+            ;;
+            stop)
+                LXQ_COMMAND="stop"
+            ;;
+            destroy)
+                LXQ_COMMAND="destroy"
             ;;
         esac
 

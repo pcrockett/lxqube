@@ -38,7 +38,7 @@ for dep in "${DEPENDENCIES[@]}"; do
 done
 
 function show_usage() {
-    printf "Usage: lxq sandbox attach [sandbox-name]\n" >&2
+    printf "Usage: lxq sandbox start [sandbox-name]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -99,14 +99,22 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
     # shellcheck source=/dev/null
     . "${sandbox_file}"
 
+    template_cont_name="lxq-templ-${LXQ_TEMPLATE_NAME}"
     sandbox_cont_name="lxq-${ARG_SANDBOX_NAME}"
 
-    lxc-attach --name "${sandbox_cont_name}" \
-        --clear-env \
-        --keep-var TERM \
-        --logpriority "${LXQ_LOG_PRIORITY}" \
-        -- \
-        sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
+    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Copying ${template_cont_name} to ${sandbox_cont_name}..."
+    lxc-copy --name "${template_cont_name}" \
+        --newname "${sandbox_cont_name}" \
+        --foreground \
+        --tmpfs \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+
+    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Starting ${sandbox_cont_name}..."
+    lxc-start "${sandbox_cont_name}" \
+        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-wait --name "${sandbox_cont_name}" \
+        --state RUNNING \
+        --logpriority "${LXQ_LOG_PRIORITY}"
 
 else
     echo "No sandbox name specified."
