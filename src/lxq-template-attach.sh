@@ -21,6 +21,8 @@
 set -Eeuo pipefail
 
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
+readonly HOOK_DIR="${REPO_DIR}/hooks/template"
 readonly SCRIPT_NAME=$(basename "$0")
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop)
 
@@ -95,6 +97,13 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
     fi
 
     container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
+
+    pre_start_hook="${HOOK_DIR}/pre-start.sh"
+    if [ -e "${pre_start_hook}" ]; then
+        LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+            "${pre_start_hook}"
+    fi
+
     lxc-start "${container_name}"
     lxc-wait --name "${container_name}" \
         --state RUNNING

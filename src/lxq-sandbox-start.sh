@@ -22,6 +22,8 @@ set -Eeuo pipefail
 
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
+readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
+readonly HOOK_DIR="${REPO_DIR}/hooks/sandbox"
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy)
 
 function panic() {
@@ -106,6 +108,12 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
         --newname "${sandbox_cont_name}" \
         --foreground \
         --tmpfs
+
+    pre_start_hook="${HOOK_DIR}/pre-start.sh"
+    if [ -e "${pre_start_hook}" ]; then
+        LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
+            "${pre_start_hook}"
+    fi
 
     lxc-start "${sandbox_cont_name}"
     lxc-wait --name "${sandbox_cont_name}" \
