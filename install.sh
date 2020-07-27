@@ -76,6 +76,7 @@ if [ ! -d "${LXQ_PATH}" ]; then
     sudo mkdir "${LXQ_PATH}" --parent
     sudo chown "${USER}:${USER}" "${LXQ_PATH}"
     chmod +x "${LXQ_PATH}"
+    chmod o-rw "${LXQ_PATH}"
 fi
 
 echo "Symlinks in place. Run..."
