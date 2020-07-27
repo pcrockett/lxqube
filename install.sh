@@ -39,13 +39,44 @@ for dep in "${DEPENDENCIES[@]}"; do
     installed "${dep}" || panic "Missing '${dep}'"
 done
 
+DEFAULT_CONFIG="${SCRIPT_DIR}/default-config.sh"
+# shellcheck source=/dev/null
+. "${DEFAULT_CONFIG}"
+
+USER_CONFIG="${SCRIPT_DIR}/user-config.sh"
+if [ -f "${USER_CONFIG}" ]; then
+    # shellcheck source=/dev/null
+    . "${USER_CONFIG}"
+fi
+
 BIN_DIR=~/.local/bin
-if [ ! -d "$BIN_DIR" ]; then
-    mkdir "$BIN_DIR" --parent
+if [ ! -d "${BIN_DIR}" ]; then
+    mkdir "${BIN_DIR}" --parent
 fi
 
 LXQ_SCRIPT="${SCRIPT_DIR}/src/lxq"
 ln --symbolic "${LXQ_SCRIPT}" "${BIN_DIR}/lxq" || true
+
+LXC_CONFIG_DIR=~/.config/lxc
+if [ ! -d "${LXC_CONFIG_DIR}" ]; then
+    mkdir "${LXC_CONFIG_DIR}" --parent
+fi
+
+LXC_CONTAINER_CONF="${SCRIPT_DIR}/lxc/default.conf"
+ln --symbolic "${LXC_CONTAINER_CONF}" "${LXC_CONFIG_DIR}/default.conf" || true
+
+LXC_SYSTEM_CONF="${SCRIPT_DIR}/lxc/lxc.conf"
+LXC_SYSTEM_CONF_SCRIPT="${LXC_SYSTEM_CONF}.sh"
+$LXC_SYSTEM_CONF_SCRIPT
+
+ln --symbolic "${LXC_SYSTEM_CONF}" "${LXC_CONFIG_DIR}/lxc.conf" || true
+
+if [ ! -d "${LXQ_PATH}" ]; then
+    echo "Creating ${LXQ_PATH}..."
+    sudo mkdir "${LXQ_PATH}" --parent
+    sudo chown "${USER}:${USER}" "${LXQ_PATH}"
+    chmod +x "${LXQ_PATH}"
+fi
 
 echo "Symlinks in place. Run..."
 echo ""

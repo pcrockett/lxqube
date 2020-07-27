@@ -100,8 +100,6 @@ fi;
 
 if is_set "${ARG_TEMPLATE_NAME+x}"; then
 
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
-
     container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
 
     if is_set "${ARG_CLONE+x}"; then
@@ -109,29 +107,28 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
         parent_container_name="lxq-templ-${ARG_CLONE}"
         lxc-copy --name "${parent_container_name}" \
             --newname "${container_name}" \
-            --foreground \
-            --logpriority "${LXQ_LOG_PRIORITY}"
+            --foreground
 
     else
 
         lxc-create --name "${container_name}" \
             --template download \
-            --logpriority "${LXQ_LOG_PRIORITY}" \
             -- \
             --dist "${LXQ_DISTRO}" \
             --arch "${LXQ_ARCH}" \
             --release "${LXQ_RELEASE}"
 
-        lxc-start --name "${container_name}" \
-            --logpriority "${LXQ_LOG_PRIORITY}"
+        if [ "$(systemctl is-active lxc-net)" != "active" ]; then
+            sudo systemctl start lxc-net
+        fi
+
+        lxc-start --name "${container_name}"
         lxc-wait --name "${container_name}" \
-            --state "RUNNING" \
-            --logpriority "${LXQ_LOG_PRIORITY}"
+            --state "RUNNING"
 
         lxc-attach --name "${container_name}" \
             --clear-env \
             --keep-var TERM \
-            --logpriority "${LXQ_LOG_PRIORITY}" \
             -- \
             /bin/bash  << EOF
 /usr/sbin/useradd --home-dir "/home/${LXQ_CONTAINER_USER}" \
@@ -140,11 +137,9 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
     "${LXQ_CONTAINER_USER}"
 EOF
 
-        lxc-stop --name "${container_name}" \
-            --logpriority "${LXQ_LOG_PRIORITY}"
+        lxc-stop --name "${container_name}"
         lxc-wait --name "${container_name}" \
-            --state "STOPPED" \
-            --logpriority "${LXQ_LOG_PRIORITY}"
+            --state "STOPPED"
 
     fi
 

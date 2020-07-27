@@ -89,7 +89,6 @@ if is_set "${ARG_HELP+x}"; then
 fi
 
 if is_set "${ARG_RUNNING+x}"; then
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
     lxc-ls --fancy --filter "^lxq-sbox-.+$"
 else
     ls "${LXQ_SANDBOX_DIR}"

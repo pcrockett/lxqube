@@ -90,10 +90,6 @@ fi;
 
 if is_set "${ARG_SANDBOX_NAME+x}"; then
 
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
-
-    systemctl start lxc-net
-
     sandbox_file="${LXQ_SANDBOX_DIR}/${ARG_SANDBOX_NAME}"
 
     # shellcheck source=/dev/null
@@ -101,16 +97,11 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
 
     sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
 
-    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Stopping ${sandbox_cont_name}..."
-    lxc-stop "${sandbox_cont_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-stop "${sandbox_cont_name}"
     lxc-wait --name "${sandbox_cont_name}" \
-        --state STOPPED \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --state STOPPED
 
-    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Destroying ${sandbox_cont_name}..."
-    lxc-destroy --name "${sandbox_cont_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-destroy --name "${sandbox_cont_name}"
 
 else
     echo "No sandbox name specified."

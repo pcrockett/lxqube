@@ -84,5 +84,4 @@ if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi;
 
-test "$(id -u)" -eq 0 || panic "Must run this script as root."
 lxc-ls --fancy --filter "^lxq-templ-.+$"

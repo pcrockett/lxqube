@@ -94,9 +94,9 @@ fi;
 
 if is_set "${ARG_SANDBOX_NAME+x}"; then
 
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
-
-    systemctl start lxc-net
+    if [ "$(systemctl is-active lxc-net)" != "active" ]; then
+        sudo systemctl start lxc-net
+    fi
 
     sandbox_file="${LXQ_SANDBOX_DIR}/${ARG_SANDBOX_NAME}"
 
@@ -108,13 +108,11 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
     if is_set "${ARG_ROOT+x}"; then
         lxc-attach --name "${sandbox_cont_name}" \
             --clear-env \
-            --keep-var TERM \
-            --logpriority "${LXQ_LOG_PRIORITY}" || true # "|| true" to disregard exit code
+            --keep-var TERM || true # "|| true" to disregard exit code
     else
         lxc-attach --name "${sandbox_cont_name}" \
             --clear-env \
             --keep-var TERM \
-            --logpriority "${LXQ_LOG_PRIORITY}" \
             -- \
             sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
     fi

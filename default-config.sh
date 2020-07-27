@@ -9,5 +9,5 @@ set -Eeuo pipefail
 export LXQ_DISTRO="ubuntu"
 export LXQ_RELEASE="xenial"
 export LXQ_ARCH="amd64"
-export LXQ_LOG_PRIORITY="ERROR"
 export LXQ_CONTAINER_USER="sandboxed-user"
+export LXQ_PATH="/var/lib/lxq"

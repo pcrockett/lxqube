@@ -90,9 +90,9 @@ fi;
 
 if is_set "${ARG_SANDBOX_NAME+x}"; then
 
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
-
-    systemctl start lxc-net
+    if [ "$(systemctl is-active lxc-net)" != "active" ]; then
+        sudo systemctl start lxc-net
+    fi
 
     sandbox_file="${LXQ_SANDBOX_DIR}/${ARG_SANDBOX_NAME}"
 
@@ -102,19 +102,14 @@ if is_set "${ARG_SANDBOX_NAME+x}"; then
     template_cont_name="lxq-templ-${LXQ_TEMPLATE_NAME}"
     sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
 
-    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Copying ${template_cont_name} to ${sandbox_cont_name}..."
     lxc-copy --name "${template_cont_name}" \
         --newname "${sandbox_cont_name}" \
         --foreground \
-        --tmpfs \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --tmpfs
 
-    test "${LXQ_LOG_PRIORITY}" == "DEBUG" && echo "Starting ${sandbox_cont_name}..."
-    lxc-start "${sandbox_cont_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-start "${sandbox_cont_name}"
     lxc-wait --name "${sandbox_cont_name}" \
-        --state RUNNING \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --state RUNNING
 
 else
     echo "No sandbox name specified."

@@ -90,25 +90,20 @@ fi;
 
 if is_set "${ARG_TEMPLATE_NAME+x}"; then
 
-    test "$(id -u)" -eq 0 || panic "Must run this script as root."
-
-    systemctl start lxc-net
+    if [ "$(systemctl is-active lxc-net)" != "active" ]; then
+        sudo systemctl start lxc-net
+    fi
 
     container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
-    lxc-start "${container_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+    lxc-start "${container_name}"
     lxc-wait --name "${container_name}" \
-        --state RUNNING \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --state RUNNING
     lxc-attach --name "${container_name}" \
         --clear-env \
-        --keep-var TERM \
-        --logpriority "${LXQ_LOG_PRIORITY}"
-    lxc-stop "${container_name}" \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --keep-var TERM
+    lxc-stop "${container_name}"
     lxc-wait --name "${container_name}" \
-        --state STOPPED \
-        --logpriority "${LXQ_LOG_PRIORITY}"
+        --state STOPPED
 else
     echo "No template name specified."
     show_usage_and_exit
