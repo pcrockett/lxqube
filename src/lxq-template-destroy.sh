@@ -20,9 +20,11 @@
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 set -Eeuo pipefail
 
-readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
 readonly DEPENDENCIES=(lxc-destroy)
+readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
+readonly TEMPLATES_CONFIG_DIR="${REPO_DIR}/templates"
 
 function panic() {
     >&2 echo "Fatal: $*"
@@ -90,6 +92,7 @@ fi;
 
 if is_set "${ARG_TEMPLATE_NAME+x}"; then
     lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
+    rm -r "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
 else
     echo "No template name specified."
     show_usage_and_exit

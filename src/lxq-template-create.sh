@@ -20,9 +20,11 @@
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 set -Eeuo pipefail
 
-readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
 readonly DEPENDENCIES=(lxc-create)
+readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
+readonly TEMPLATES_CONFIG_DIR="${REPO_DIR}/templates"
 
 function panic() {
     >&2 echo "Fatal: $*"
@@ -101,6 +103,12 @@ fi;
 if is_set "${ARG_TEMPLATE_NAME+x}"; then
 
     container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
+    new_lxc_config="${LXQ_PATH}/${container_name}/config"
+
+    template_config_dir="${TEMPLATES_CONFIG_DIR}/${ARG_TEMPLATE_NAME}"
+    if [ -d "${template_config_dir}" ]; then
+        panic "${template_config_dir} already exists."
+    fi
 
     if is_set "${ARG_CLONE+x}"; then
 
@@ -108,6 +116,12 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
         lxc-copy --name "${parent_container_name}" \
             --newname "${container_name}" \
             --foreground
+
+        old_config_dir="${TEMPLATES_CONFIG_DIR}/${ARG_CLONE}"
+        cp -r "${old_config_dir}" "${template_config_dir}"
+
+        # In the LXC config file, replace old LXQ config path with new LXQ config path
+        sed -i "s|${old_config_dir}|${template_config_dir}|g" "${new_lxc_config}"
 
     else
 
@@ -117,6 +131,12 @@ if is_set "${ARG_TEMPLATE_NAME+x}"; then
             --dist "${LXQ_DISTRO}" \
             --arch "${LXQ_ARCH}" \
             --release "${LXQ_RELEASE}"
+
+        mkdir --parent "${template_config_dir}"
+        echo "# No custom settings yet." > "${template_config_dir}/config"
+
+        # Tell LXC to include our custom LXQ config
+        echo "lxc.include = ${template_config_dir}/config" >> "${new_lxc_config}"
 
         if [ "$(systemctl is-active lxc-net)" != "active" ]; then
             sudo systemctl start lxc-net
