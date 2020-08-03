@@ -20,20 +20,8 @@
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 set -Eeuo pipefail
 
-readonly SCRIPT_NAME=$(basename "$0")
 readonly DEPENDENCIES=(lxc-destroy)
-readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-readonly REPO_DIR=$(dirname "${SCRIPT_DIR}")
-readonly TEMPLATES_CONFIG_DIR="${REPO_DIR}/templates"
-
-function panic() {
-    >&2 echo "Fatal: $*"
-    exit 1
-}
-
-function installed() {
-    command -v "$1" >/dev/null 2>&1
-}
+readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
 
 for dep in "${DEPENDENCIES[@]}"; do
     installed "${dep}" || panic "Missing '${dep}'"
@@ -49,16 +37,6 @@ function show_usage() {
 function show_usage_and_exit() {
     show_usage
     exit 1
-}
-
-function is_set() {
-    # Use this like so:
-    #
-    #     is_set "${VAR_NAME+x}" || show_usage_and_exit
-    #
-    # https://stackoverflow.com/a/13864829
-
-    test ! -z "$1"
 }
 
 function parse_commandline() {
@@ -88,12 +66,9 @@ parse_commandline "$@"
 
 if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
-fi;
-
-if is_set "${ARG_TEMPLATE_NAME+x}"; then
-    lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
-    rm -r "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
-else
-    echo "No template name specified."
-    show_usage_and_exit
 fi
+
+is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
+
+lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
+rm -r "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
