@@ -119,10 +119,10 @@ parse_commandline "$@"
 
 if is_set "${LXQ_COMMAND+x}"; then
 
-    export LXQ_SANDBOX_DIR="${LXQ_REPO_DIR}/sandboxes"
+    export LXQ_SANDBOXES_ROOT_DIR="${LXQ_REPO_DIR}/sandboxes"
 
-    if [ ! -d "${LXQ_SANDBOX_DIR}" ]; then
-        mkdir --parent "${LXQ_SANDBOX_DIR}"
+    if [ ! -d "${LXQ_SANDBOXES_ROOT_DIR}" ]; then
+        mkdir --parent "${LXQ_SANDBOXES_ROOT_DIR}"
     fi
 
     shift 1

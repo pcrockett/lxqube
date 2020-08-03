@@ -102,7 +102,7 @@ is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 
 if is_set "${ARG_SANDBOX_NAME+x}"; then
 
-    sandbox_file="${LXQ_SANDBOX_DIR}/${ARG_SANDBOX_NAME}"
+    sandbox_file="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
     if [ -f "${sandbox_file}" ]; then
         panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
     fi

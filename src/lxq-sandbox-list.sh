@@ -91,5 +91,5 @@ fi
 if is_set "${ARG_RUNNING+x}"; then
     lxc-ls --fancy --filter "^lxq-sbox-.+$"
 else
-    ls "${LXQ_SANDBOX_DIR}"
+    ls "${LXQ_SANDBOXES_ROOT_DIR}"
 fi

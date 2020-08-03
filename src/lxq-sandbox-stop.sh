@@ -90,7 +90,7 @@ fi;
 
 if is_set "${ARG_SANDBOX_NAME+x}"; then
 
-    sandbox_file="${LXQ_SANDBOX_DIR}/${ARG_SANDBOX_NAME}"
+    sandbox_file="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 
     # shellcheck source=/dev/null
     . "${sandbox_file}"
