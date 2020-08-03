@@ -55,17 +55,25 @@ fi;
 is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
 
-sandbox_file="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
-if [ -f "${sandbox_file}" ]; then
-    panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
-fi
+sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
+test ! -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
+mkdir --parent "${sandbox_dir}"
 
-cat > "${sandbox_file}" << EOF
+template_dir="${LXQ_REPO_DIR}/templates/${ARG_TEMPLATE_NAME}"
+template_config="${template_dir}/config"
+
+sandbox_config_file="${sandbox_dir}/config"
+cat > "${sandbox_config_file}" << EOF
+lxc.include = ${template_config}
+EOF
+
+sandbox_meta_script="${sandbox_dir}/meta.sh"
+cat > "${sandbox_meta_script}" << EOF
 #!/usr/bin/env bash
-
 set -Eeuo pipefail
 
 export LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}"
+export LXQ_TEMPLATE_CONFIG="${template_config}"
 EOF
 
-chmod u+x "${sandbox_file}"
+chmod u+x "${sandbox_meta_script}"

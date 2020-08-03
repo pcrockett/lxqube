@@ -44,6 +44,6 @@ fi
 
 is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
 
-sandbox_file="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
-test -e "${sandbox_file}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
-rm "${sandbox_file}"
+sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
+test -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
+rm --recursive -- "${sandbox_dir}"
