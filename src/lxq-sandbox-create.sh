@@ -55,12 +55,13 @@ fi;
 is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
 
+template_dir="${LXQ_REPO_DIR}/templates/${ARG_TEMPLATE_NAME}"
+test -d "${template_dir}" || panic "Template ${ARG_TEMPLATE_NAME} does not exist."
+template_config="${template_dir}/config"
+
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test ! -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
 mkdir --parent "${sandbox_dir}"
-
-template_dir="${LXQ_REPO_DIR}/templates/${ARG_TEMPLATE_NAME}"
-template_config="${template_dir}/config"
 
 sandbox_config_file="${sandbox_dir}/config"
 cat > "${sandbox_config_file}" << EOF
