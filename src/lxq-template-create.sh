@@ -87,6 +87,12 @@ if is_set "${ARG_CLONE+x}"; then
     # In the LXC config file, replace old LXQ config path with new LXQ config path
     sed -i "s|${old_config_dir}|${template_config_dir}|g" "${new_lxc_config}"
 
+    LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+        LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
+        LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
+        LXQ_TEMPLATE_PARENT="${ARG_CLONE}" \
+        lxq_hook "post-create"
+
 else
 
     lxc-create --name "${container_name}" \
@@ -123,9 +129,9 @@ EOF
     lxc-wait --name "${container_name}" \
         --state "STOPPED"
 
-fi
+    LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+        LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
+        LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
+        lxq_hook "post-create"
 
-LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
-    LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
-    LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
-    lxq_hook "post-create"
+fi
