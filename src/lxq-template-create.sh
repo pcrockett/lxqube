@@ -97,6 +97,7 @@ else
 
     lxc-create --name "${container_name}" \
         --template download \
+        --bdev "${LXQ_BACKING_STORE}" \
         -- \
         --dist "${LXQ_DISTRO}" \
         --arch "${LXQ_ARCH}" \
