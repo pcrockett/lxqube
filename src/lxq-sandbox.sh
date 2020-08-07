@@ -79,7 +79,8 @@ if is_set "${LXQ_COMMAND+x}"; then
     fi
 
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-sandbox-${LXQ_COMMAND}.sh" "$@"
+    LXQ_HOOK_DIR="${LXQ_REPO_DIR}/hooks/sandbox" \
+        "${LXQ_SCRIPT_DIR}/lxq-sandbox-${LXQ_COMMAND}.sh" "$@"
     exit "${?}"
 fi
 

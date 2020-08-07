@@ -69,7 +69,8 @@ parse_commandline "$@"
 if is_set "${LXQ_COMMAND+x}"; then
 
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-template-${LXQ_COMMAND}.sh" "$@"
+    LXQ_HOOK_DIR="${LXQ_REPO_DIR}/hooks/template" \
+        "${LXQ_SCRIPT_DIR}/lxq-template-${LXQ_COMMAND}.sh" "$@"
     exit "${?}"
 fi
 

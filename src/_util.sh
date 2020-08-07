@@ -57,3 +57,14 @@ function start_lxc_net() {
     fi
 }
 export -f start_lxc_net
+
+function lxq_hook() {
+    is_set "${LXQ_HOOK_DIR+x}" || panic "LXQ_HOOK_DIR environment variable not set."
+    is_set "${1+x}" || panic "Expecting hook name as parameter, i.e. 'pre-start'"
+
+    hook_path="${LXQ_HOOK_DIR}/${1}.sh"
+    if [ -e "${hook_path}" ]; then
+        "${hook_path}"
+    fi
+}
+export -f lxq_hook

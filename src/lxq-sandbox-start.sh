@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly HOOK_DIR="${LXQ_REPO_DIR}/hooks/sandbox"
+# Expected environment variables:
+#
+# * LXQ_HOOK_DIR
+#
+
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy)
 
 for dep in "${DEPENDENCIES[@]}"; do
@@ -94,11 +98,8 @@ lxc-copy --name "${template_cont_name}" \
 lxc_config="${LXQ_PATH}/${sandbox_cont_name}/config"
 sed -i "s|${LXQ_TEMPLATE_CONFIG}|${sandbox_config}|g" "${lxc_config}"
 
-pre_start_hook="${HOOK_DIR}/pre-start.sh"
-if [ -e "${pre_start_hook}" ]; then
-    LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
-        "${pre_start_hook}"
-fi
+LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
+    lxq_hook "pre-start"
 
 lxc-start "${sandbox_cont_name}"
 lxc-wait --name "${sandbox_cont_name}" \
