@@ -20,6 +20,11 @@
 # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
 set -Eeuo pipefail
 
+# Expected environment variables:
+#
+# * LXQ_HOOK_DIR
+#
+
 readonly DEPENDENCIES=(lxc-destroy)
 readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
 
@@ -72,3 +77,6 @@ is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 
 lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
 rm -r "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
+
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    lxq_hook "post-destroy"

@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# Expected environment variables:
+#
+# * LXQ_HOOK_DIR
+#
+
 readonly DEPENDENCIES=(lxc-create)
 readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
 
@@ -119,3 +124,8 @@ EOF
         --state "STOPPED"
 
 fi
+
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
+    LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
+    lxq_hook "post-create"
