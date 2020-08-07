@@ -103,7 +103,11 @@ else
         --release "${LXQ_RELEASE}"
 
     mkdir --parent "${template_config_dir}"
-    echo "# No custom settings yet." > "${template_config_dir}/config"
+    cat > "${template_config_dir}/config" << EOF
+# Use this file to add custom configuration for your template container. Make
+# sure to end the file with an empty line, as various plugins may need to
+# automatically append some settings to the file.
+EOF
 
     # Tell LXC to include our custom LXQ config
     echo "lxc.include = ${template_config_dir}/config" >> "${new_lxc_config}"
