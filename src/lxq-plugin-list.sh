@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 if is_set "${LXQ_SHORT_SUMMARY+x}"; then
-    printf "\t\t\tList currently installed plugins"
+    printf "\t\t\tShow currently installed plugins"
     exit 0
 fi
 
