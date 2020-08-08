@@ -53,6 +53,6 @@ test -d "${LXQ_PLUGIN_DIR}" || panic "Plugin \"${ARG_PLUGIN_NAME}\" is not insta
 plugin_dir="${LXQ_PLUGIN_DIR}/${ARG_PLUGIN_NAME}"
 test -d "${plugin_dir}" || panic "Plugin \"${ARG_PLUGIN_NAME}\" is not installed."
 
-pushd "${plugin_dir}"
+pushd "${plugin_dir}" > /dev/null
 git pull || true
 popd > /dev/null
