@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Expected environment variables:
-#
-# * LXQ_HOOK_DIR
-#
-
 readonly DEPENDENCIES=(lxc-create)
 readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
 
@@ -91,7 +86,7 @@ if is_set "${ARG_CLONE+x}"; then
         LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
         LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
         LXQ_TEMPLATE_PARENT="${ARG_CLONE}" \
-        lxq_hook "post-create"
+        lxq_hook "template/post-create"
 
 else
 
@@ -137,6 +132,6 @@ EOF
     LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
         LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
         LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
-        lxq_hook "post-create"
+        lxq_hook "template/post-create"
 
 fi

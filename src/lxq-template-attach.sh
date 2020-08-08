@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Expected environment variables:
-#
-# * LXQ_HOOK_DIR
-#
-
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop)
 
 for dep in "${DEPENDENCIES[@]}"; do
@@ -60,7 +55,7 @@ start_lxc_net
 container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
 
 LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
-    lxq_hook "pre-start"
+    lxq_hook "template/pre-start"
 
 lxc-start "${container_name}"
 lxc-wait --name "${container_name}" \

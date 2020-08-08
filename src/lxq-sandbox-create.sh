@@ -81,4 +81,4 @@ chmod u+x "${sandbox_meta_script}"
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     LXQ_SANDBOX_CONFIG_FILE="${sandbox_config_file}" \
-    lxq_hook "post-create"
+    lxq_hook "sandbox/post-create"

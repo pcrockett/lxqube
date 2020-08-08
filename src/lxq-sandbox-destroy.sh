@@ -49,4 +49,4 @@ test -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
 rm --recursive -- "${sandbox_dir}"
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
-    lxq_hook "post-destroy"
+    lxq_hook "sandbox/post-destroy"
