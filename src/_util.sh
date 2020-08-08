@@ -28,6 +28,9 @@ export LXQ_SCRIPT_DIR
 readonly LXQ_REPO_DIR=$(dirname "${LXQ_SCRIPT_DIR}")
 export LXQ_REPO_DIR
 
+readonly LXQ_PLUGIN_DIR="${LXQ_REPO_DIR}/plugins"
+export LXQ_PLUGIN_DIR
+
 function panic() {
     >&2 echo "Fatal: $*"
     exit 1

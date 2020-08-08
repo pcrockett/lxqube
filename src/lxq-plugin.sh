@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-[[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
 
-readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-readonly SCRIPT_NAME=$(basename "$0")
-readonly UTIL_SCRIPT="${SCRIPT_DIR}/_util.sh"
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\tManage plugins"
+    exit 0
+fi
 
-# shellcheck source=/dev/null
-. "${UTIL_SCRIPT}"
-
-subcommand_scripts=$(find "${LXQ_SCRIPT_DIR}" -regex ".*/lxq-[a-z]+\.sh")
+subcommand_scripts=$(find "${LXQ_SCRIPT_DIR}" -regex ".*/lxq-plugin-[a-z]+\.sh")
 
 function print_subcommand_summary() {
     full_script_path="${1}"
-    if [[ $full_script_path =~ /lxq-([a-z]+)\.sh ]]; then
+    if [[ $full_script_path =~ /lxq-plugin-([a-z]+)\.sh ]]; then
         command_name="${BASH_REMATCH[1]}"
         summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
         printf "  %s%s\n" "${command_name}" "${summary}" >&2
@@ -23,7 +20,7 @@ function print_subcommand_summary() {
 }
 
 function show_usage() {
-    printf "Usage: %s [command]\n" "${SCRIPT_NAME}" >&2
+    printf "Usage: lxq plugin [command]\n" >&2
     printf "\n" >&2
     printf "Available commands:\n" >&2
 
@@ -48,7 +45,7 @@ function parse_commandline() {
 
         for s in $subcommand_scripts
         do
-            if [ "${LXQ_SCRIPT_DIR}/lxq-${1}.sh" == "${s}" ]; then
+            if [ "${LXQ_SCRIPT_DIR}/lxq-plugin-${1}.sh" == "${s}" ]; then
                 LXQ_COMMAND="${1}"
             fi
         done
@@ -78,20 +75,8 @@ function parse_commandline() {
 parse_commandline "$@"
 
 if is_set "${LXQ_COMMAND+x}"; then
-
-    DEFAULT_CONFIG="${LXQ_REPO_DIR}/default-config.sh"
-    USER_CONFIG="${LXQ_REPO_DIR}/user-config.sh"
-
-    # shellcheck source=/dev/null
-    . "${DEFAULT_CONFIG}"
-
-    if [ -f "${USER_CONFIG}" ]; then
-        # shellcheck source=/dev/null
-        . "${USER_CONFIG}"
-    fi
-
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-${LXQ_COMMAND}.sh" "$@"
+    "${LXQ_SCRIPT_DIR}/lxq-plugin-${LXQ_COMMAND}.sh" "$@"
     exit "${?}"
 fi
 
