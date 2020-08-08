@@ -91,7 +91,22 @@ if is_set "${ARG_DIR+x}"; then
 
 elif is_set "${ARG_CLONE+x}"; then
 
-    panic "Not implemented yet."
+    temp_dir="${LXQ_PLUGIN_DIR}/.temp"
+    test ! -d "${temp_dir}" || rm -rf "${temp_dir}"
+    git clone "${ARG_CLONE}" "${temp_dir}"
+
+    manifest="${temp_dir}/lxq-manifest.sh"
+    test -e "${manifest}" || panic "No valid lxq-manifest.sh found in ${ARG_CLONE}."
+
+    # shellcheck source=/dev/null
+    . "${manifest}"
+
+    is_set "${LXQ_PLUGIN_NAME+x}" || panic "Expected LXQ_PLUGIN_NAME environment variable to be exported from manifest."
+
+    dest_plugin_dir="${LXQ_PLUGIN_DIR}/${LXQ_PLUGIN_NAME}"
+    test ! -d "${dest_plugin_dir}" || panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
+
+    mv "${temp_dir}" "${dest_plugin_dir}"
 
 fi
 
