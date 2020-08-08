@@ -77,9 +77,16 @@ if is_set "${ARG_DIR+x}"; then
 
     test -d "${ARG_DIR}" || panic "${ARG_DIR} is not a valid directory."
     ARG_DIR=$(readlink -f "${ARG_DIR}")
-    plugin_name=$(basename "${ARG_DIR}")
-    dest_plugin_dir="${LXQ_PLUGIN_DIR}/${plugin_name}"
-    test ! -d "${dest_plugin_dir}" || panic "A plugin called \"${plugin_name}\" is already installed."
+    manifest="${ARG_DIR}/lxq-manifest.sh"
+    test -e "${manifest}" || panic "No valid lxq-manifest.sh found in ${ARG_DIR}."
+
+    # shellcheck source=/dev/null
+    . "${manifest}"
+
+    is_set "${LXQ_PLUGIN_NAME+x}" || panic "Expected LXQ_PLUGIN_NAME environment variable to be exported from manifest."
+
+    dest_plugin_dir="${LXQ_PLUGIN_DIR}/${LXQ_PLUGIN_NAME}"
+    test ! -d "${dest_plugin_dir}" || panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
     ln --symbolic "${ARG_DIR}" "${dest_plugin_dir}"
 
 elif is_set "${ARG_CLONE+x}"; then
