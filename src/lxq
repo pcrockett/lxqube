@@ -10,12 +10,15 @@ readonly UTIL_SCRIPT="${SCRIPT_DIR}/_util.sh"
 . "${UTIL_SCRIPT}"
 
 function find_subcommand_scripts() {
-    find "${LXQ_SCRIPT_DIR}" -regex ".*/lxq-[a-z]+\.sh"
+    find "${LXQ_SCRIPT_DIR}" -maxdepth 1 -mindepth 1 -regex ".*/lxq-[a-z]+\.sh"
 
-    plugin_src_dirs+=$(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 2 -mindepth 2 -name src -type d)
-    for src_dir in $plugin_src_dirs
+    plugin_dirs=$(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 1 -mindepth 1 -type d)
+    for plugin_dir in $plugin_dirs
     do
-        find -L "${src_dir}" -regex ".*/lxq-[a-z]+\.sh"
+        plugin_src_dir="${plugin_dir}/src"
+        if [ -d "${plugin_src_dir}" ]; then
+            find -L "${plugin_src_dir}" -maxdepth 1 -mindepth 1 -regex ".*/lxq-[a-z]+\.sh"
+        fi
     done
 }
 
