@@ -50,7 +50,7 @@ parse_commandline "$@"
 
 if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
-fi;
+fi
 
 is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
@@ -81,4 +81,5 @@ chmod u+x "${sandbox_meta_script}"
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     LXQ_SANDBOX_CONFIG_FILE="${sandbox_config_file}" \
+    LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
     lxq_hook "sandbox/post-create"
