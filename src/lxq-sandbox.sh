@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-[[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
+
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\tManage sandboxes"
+    exit 0
+fi
 
 function show_usage() {
     printf "Usage: lxq sandbox [command]\n" >&2
@@ -58,10 +62,6 @@ function parse_commandline() {
             -h|-\?|--help)
                 ARG_HELP="true"
             ;;
-            --short-summary)
-                # This argument intentionally undocumented in usage. Only used internally.
-                ARG_SHORT_SUMMARY="true"
-            ;;
             *)
                 echo "Unrecognized argument: ${1}"
                 show_usage_and_exit
@@ -73,11 +73,6 @@ function parse_commandline() {
 }
 
 parse_commandline "$@"
-
-if is_set "${ARG_SHORT_SUMMARY+x}"; then
-    printf "\t\tManage sandboxes"
-    exit 0
-fi
 
 if is_set "${LXQ_COMMAND+x}"; then
 
@@ -95,7 +90,7 @@ fi
 
 if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
-fi;
+fi
 
 echo "No arguments specified."
 show_usage_and_exit

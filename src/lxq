@@ -15,7 +15,7 @@ function print_subcommand_summary() {
     full_script_path="${1}"
     if [[ $full_script_path =~ /lxq-([a-z]+)\.sh ]]; then
         command_name="${BASH_REMATCH[1]}"
-        summary=$("${full_script_path}" --short-summary)
+        summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
         printf "  %s%s\n" "${command_name}" "${summary}" >&2
     else
         panic "${full_script_path} did not match regex as expected."
