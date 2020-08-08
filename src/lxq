@@ -9,11 +9,32 @@ readonly UTIL_SCRIPT="${SCRIPT_DIR}/_util.sh"
 # shellcheck source=/dev/null
 . "${UTIL_SCRIPT}"
 
-subcommand_scripts=$(find "${LXQ_SCRIPT_DIR}" -regex ".*/lxq-[a-z]+\.sh")
+function find_subcommand_scripts() {
+    find "${LXQ_SCRIPT_DIR}" -regex ".*/lxq-[a-z]+\.sh"
+
+    plugin_src_dirs+=$(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 2 -mindepth 2 -name src -type d)
+    for src_dir in $plugin_src_dirs
+    do
+        find -L "${src_dir}" -regex ".*/lxq-[a-z]+\.sh"
+    done
+}
+
+subcommand_scripts=$(find_subcommand_scripts)
+
+declare -A subcommands
+for script in $subcommand_scripts
+do
+    if [[ $script =~ /lxq-([a-z]+)\.sh$ ]]; then
+        subcom="${BASH_REMATCH[1]}"
+        subcommands["${subcom}"]="${script}"
+    else
+        panic "$script did not match regex as expected."
+    fi
+done
 
 function print_subcommand_summary() {
     full_script_path="${1}"
-    if [[ $full_script_path =~ /lxq-([a-z]+)\.sh ]]; then
+    if [[ $full_script_path =~ /lxq-([a-z]+)\.sh$ ]]; then
         command_name="${BASH_REMATCH[1]}"
         summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
         printf "  %s%s\n" "${command_name}" "${summary}" >&2
@@ -45,16 +66,9 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-
-        for s in $subcommand_scripts
-        do
-            if [ "${LXQ_SCRIPT_DIR}/lxq-${1}.sh" == "${s}" ]; then
-                LXQ_COMMAND="${1}"
-            fi
-        done
-
-        if is_set "${LXQ_COMMAND+x}"; then
-            return
+        if is_set "${subcommands[${1}]+x}"; then
+            LXQ_COMMAND="${subcommands[${1}]}"
+            return # Let subcommands parse the rest of the parameters
         fi
     fi
 
@@ -91,7 +105,7 @@ if is_set "${LXQ_COMMAND+x}"; then
     fi
 
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-${LXQ_COMMAND}.sh" "$@"
+    "${LXQ_COMMAND}" "$@"
     exit "${?}"
 fi
 
