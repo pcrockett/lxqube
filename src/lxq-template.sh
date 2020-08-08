@@ -54,6 +54,10 @@ function parse_commandline() {
             -h|-\?|--help)
                 ARG_HELP="true"
             ;;
+            --short-summary)
+                # This argument intentionally undocumented in usage. Only used internally.
+                ARG_SHORT_SUMMARY="true"
+            ;;
             *)
                 echo "Unrecognized argument: ${1}"
                 show_usage_and_exit
@@ -65,6 +69,11 @@ function parse_commandline() {
 }
 
 parse_commandline "$@"
+
+if is_set "${ARG_SHORT_SUMMARY+x}"; then
+    printf "\t\tManage sandbox templates"
+    exit 0
+fi
 
 if is_set "${LXQ_COMMAND+x}"; then
 

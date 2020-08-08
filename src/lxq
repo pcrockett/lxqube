@@ -9,12 +9,29 @@ readonly UTIL_SCRIPT="${SCRIPT_DIR}/_util.sh"
 # shellcheck source=/dev/null
 . "${UTIL_SCRIPT}"
 
+subcommand_scripts=$(find "${SCRIPT_DIR}" -regex ".*/lxq-[a-z]+\.sh")
+
+function print_subcommand_summary() {
+    full_script_path="${1}"
+    if [[ $full_script_path =~ /lxq-([a-z]+)\.sh ]]; then
+        command_name="${BASH_REMATCH[1]}"
+        summary=$("${full_script_path}" --short-summary)
+        printf "  %s%s\n" "${command_name}" "${summary}" >&2
+    else
+        panic "${full_script_path} did not match regex as expected."
+    fi
+}
+
 function show_usage() {
     printf "Usage: %s [command]\n" "${SCRIPT_NAME}" >&2
     printf "\n" >&2
     printf "Available commands:\n" >&2
-    printf "  template\t\tManage sandbox templates\n" >&2
-    printf "  sandbox\t\tManage sandboxes\n" >&2
+
+    for s in $subcommand_scripts
+    do
+        print_subcommand_summary "${s}"
+    done
+
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -28,14 +45,13 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-        case "$1" in
-            template)
-                LXQ_COMMAND="template"
-            ;;
-            sandbox)
-                LXQ_COMMAND="sandbox"
-            ;;
-        esac
+
+        for s in $subcommand_scripts
+        do
+            if [ "${SCRIPT_DIR}/lxq-${1}.sh" == "${s}" ]; then
+                LXQ_COMMAND="${1}"
+            fi
+        done
 
         if is_set "${LXQ_COMMAND+x}"; then
             return
