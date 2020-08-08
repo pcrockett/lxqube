@@ -108,6 +108,8 @@ elif is_set "${ARG_CLONE+x}"; then
 
     mv "${temp_dir}" "${dest_plugin_dir}"
 
+else
+    panic "Must specify at least --dir or --git."
 fi
 
 # TODO: Run install script in plugin dir?
