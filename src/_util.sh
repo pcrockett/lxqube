@@ -84,14 +84,17 @@ export -f lxq_hook
 
 function compile_config() {
 
-    is_set "${1+x}" || panic "Expecting source dir, i.e. 'LXQ_REPO_DIR/templates/default/config.d'."
-    is_set "${2+x}" || panic "Expecting dest config file, i.e. 'LXQ_REPO_DIR/templates/default/config'."
+    test "${#}" -ge 2 || panic "Usage: compile_config [config-dirs...] [output-config-file]"
 
     ARG_CONFIG_DIRS=()
     while [ "${#}" -gt "0" ]; do
 
         if [ "${#}" -gt "1" ]; then
-            ARG_CONFIG_DIRS+=("${1}")
+            if [ -d "${config_dir}" ]; then
+                ARG_CONFIG_DIRS+=("${config_dir}")
+            else
+                panic "${config_dir} is not a directory."
+            fi
         else
             ARG_DEST_CONFIG_FILE="${1}"
         fi
@@ -99,22 +102,36 @@ function compile_config() {
         shift 1
     done
 
+    declare -A all_config_files
+    for config_dir in "${ARG_CONFIG_DIRS[@]}";
+    do
+        config_files=$(find "${config_dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf")
+        for config_file in "${config_files[@]}";
+        do
+            config_name=$(basename "${config_file}")
+            all_config_files["${config_name}"]="${config_file}"
+        done
+    done
+
+    function config_names() {
+        for name in "${!all_config_files[@]}";
+        do
+            echo "${name}"
+        done
+    }
+
+    sorted_config_names=$(config_names | sort)
+
     cat > "${ARG_DEST_CONFIG_FILE}" << EOF
 ###############################################################################
 #    This file is auto-generated. Any changes you make here will be lost.     #
 ###############################################################################
 EOF
 
-    for dir in "${ARG_CONFIG_DIRS[@]}"
+    for config_name in "${sorted_config_names[@]}";
     do
-        if [ -d "${dir}" ]; then
-
-            config_files=$(find "${dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf" | sort)
-            for c in $config_files
-            do
-                cat "${c}" >> "${ARG_DEST_CONFIG_FILE}"
-            done
-        fi
+        config_file="${all_config_files["${config_name}"]}"
+        cat "${config_file}" >> "${ARG_DEST_CONFIG_FILE}"
     done
 }
 export -f compile_config

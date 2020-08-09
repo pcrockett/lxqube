@@ -76,7 +76,7 @@ if is_set "${ARG_CLONE+x}"; then
         --foreground
 
     old_template_root="${LXQ_TEMPLATES_DIR}/${ARG_CLONE}"
-    cp -r "${old_template_root}" "${lxq_template_root}"
+    cp --recursive "${old_template_root}" "${lxq_template_root}"
 
     # In the LXC config file, replace old LXQ config path with new LXQ config path
     sed -i "s|${old_template_root}|${lxq_template_root}|g" "${new_lxc_config}"
