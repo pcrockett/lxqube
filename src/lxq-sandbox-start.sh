@@ -99,3 +99,6 @@ LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
 lxc-start "${sandbox_cont_name}"
 lxc-wait --name "${sandbox_cont_name}" \
     --state RUNNING
+
+LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
+    lxq_hook "sandbox/post-start"

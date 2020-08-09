@@ -60,9 +60,20 @@ LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
 lxc-start "${container_name}"
 lxc-wait --name "${container_name}" \
     --state RUNNING
+
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    lxq_hook "template/post-start"
+
 lxc-attach --name "${container_name}" \
     --clear-env \
     --keep-var TERM
+
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    lxq_hook "template/pre-stop"
+
 lxc-stop "${container_name}"
 lxc-wait --name "${container_name}" \
     --state STOPPED
+
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    lxq_hook "template/post-stop"

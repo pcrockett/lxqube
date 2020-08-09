@@ -53,10 +53,15 @@ is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
 
-sandbox_cont_name="sbox-${ARG_SANDBOX_NAME}"
+LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
+    lxq_hook "sandbox/pre-stop"
 
+sandbox_cont_name="sbox-${ARG_SANDBOX_NAME}"
 lxc-stop "${sandbox_cont_name}"
 lxc-wait --name "${sandbox_cont_name}" \
     --state STOPPED
+
+LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
+    lxq_hook "sandbox/post-stop"
 
 lxc-destroy --name "${sandbox_cont_name}"
