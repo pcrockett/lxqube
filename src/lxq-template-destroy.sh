@@ -70,7 +70,7 @@ fi
 
 is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 
-lxc-destroy --name "lxq-templ-${ARG_TEMPLATE_NAME}"
+lxc-destroy --name "templ-${ARG_TEMPLATE_NAME}"
 rm -r "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
 
 LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \

@@ -44,4 +44,4 @@ if is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
-lxc-ls --fancy --filter "^lxq-templ-.+$"
+lxc-ls --fancy --filter "^templ-.+$"

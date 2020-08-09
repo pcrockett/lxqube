@@ -61,7 +61,7 @@ fi
 
 is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 
-container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
+container_name="templ-${ARG_TEMPLATE_NAME}"
 new_lxc_config="${LXQ_PATH}/${container_name}/config"
 
 template_config_dir="${TEMPLATES_CONFIG_DIR}/${ARG_TEMPLATE_NAME}"
@@ -71,7 +71,7 @@ fi
 
 if is_set "${ARG_CLONE+x}"; then
 
-    parent_container_name="lxq-templ-${ARG_CLONE}"
+    parent_container_name="templ-${ARG_CLONE}"
     lxc-copy --name "${parent_container_name}" \
         --newname "${container_name}" \
         --foreground

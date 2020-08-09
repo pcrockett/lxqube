@@ -61,8 +61,8 @@ sandbox_meta="${sandbox_dir}/meta.sh"
 
 test -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
 
-template_cont_name="lxq-templ-${LXQ_TEMPLATE_NAME}"
-sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
+template_cont_name="templ-${LXQ_TEMPLATE_NAME}"
+sandbox_cont_name="sbox-${ARG_SANDBOX_NAME}"
 
 lxc-copy --name "${template_cont_name}" \
     --newname "${sandbox_cont_name}" \

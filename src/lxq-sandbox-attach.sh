@@ -59,7 +59,7 @@ start_lxc_net
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
 
-sandbox_cont_name="lxq-sbox-${ARG_SANDBOX_NAME}"
+sandbox_cont_name="sbox-${ARG_SANDBOX_NAME}"
 
 if is_set "${ARG_ROOT+x}"; then
     lxc-attach --name "${sandbox_cont_name}" \

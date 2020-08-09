@@ -43,7 +43,7 @@ if is_set "${ARG_HELP+x}"; then
 fi
 
 if is_set "${ARG_RUNNING+x}"; then
-    lxc-ls --fancy --filter "^lxq-sbox-.+$"
+    lxc-ls --fancy --filter "^sbox-.+$"
 else
     ls "${LXQ_SANDBOXES_ROOT_DIR}"
 fi

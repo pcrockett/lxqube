@@ -52,7 +52,7 @@ is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 
 start_lxc_net
 
-container_name="lxq-templ-${ARG_TEMPLATE_NAME}"
+container_name="templ-${ARG_TEMPLATE_NAME}"
 
 LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
     lxq_hook "template/pre-start"
