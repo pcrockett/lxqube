@@ -90,6 +90,7 @@ function compile_config() {
     while [ "${#}" -gt "0" ]; do
 
         if [ "${#}" -gt "1" ]; then
+            config_dir="${1}"
             if [ -d "${config_dir}" ]; then
                 ARG_CONFIG_DIRS+=("${config_dir}")
             else
@@ -103,13 +104,13 @@ function compile_config() {
     done
 
     declare -A all_config_files
-    for config_dir in "${ARG_CONFIG_DIRS[@]}";
+    for config_dir in "${ARG_CONFIG_DIRS[@]}"
     do
-        config_files=$(find "${config_dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf")
-        for config_file in "${config_files[@]}";
+        readarray -d '' config_files <  <(find "${config_dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf" -print0)
+        for config_file in "${config_files[@]}"
         do
             config_name=$(basename "${config_file}")
-            all_config_files["${config_name}"]="${config_file}"
+            all_config_files[${config_name}]="${config_file}"
         done
     done
 
@@ -120,17 +121,16 @@ function compile_config() {
         done
     }
 
-    sorted_config_names=$(config_names | sort)
-
     cat > "${ARG_DEST_CONFIG_FILE}" << EOF
 ###############################################################################
 #    This file is auto-generated. Any changes you make here will be lost.     #
 ###############################################################################
 EOF
 
-    for config_name in "${sorted_config_names[@]}";
+    readarray -t sorted_config_names < <(config_names | sort)
+    for config_name in "${sorted_config_names[@]}"
     do
-        config_file="${all_config_files["${config_name}"]}"
+        config_file="${all_config_files[${config_name}]}"
         cat "${config_file}" >> "${ARG_DEST_CONFIG_FILE}"
     done
 }
