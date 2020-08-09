@@ -71,8 +71,8 @@ function lxq_hook() {
         "${hook_path}"
     fi
 
-    plugin_dirs=$(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 1 -mindepth 1 -type d)
-    for plugin_dir in $plugin_dirs
+    readarray -d "" plugin_dirs < <(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 1 -mindepth 1 -type d -print0)
+    for plugin_dir in "${plugin_dirs[@]}"
     do
         hook_path="${plugin_dir}/hooks/${HOOK_NAME}.sh"
         if [ -e "${hook_path}" ]; then
@@ -154,3 +154,35 @@ EOF
     done
 }
 export -f compile_config
+
+function find_subcommand_scripts() {
+
+    is_set "${1+x}" || panic "Expecting single script name regex argument."
+    ARG_SCRIPT_REGEX="${1}"
+
+    readarray -d "" local_subcommands < <(find "${LXQ_SCRIPT_DIR}" -maxdepth 1 -mindepth 1 -print0)
+    for subcommand in "${local_subcommands[@]}"
+    do
+        if [[ "${subcommand}" =~ ${ARG_SCRIPT_REGEX} ]]; then
+            echo "${subcommand}"
+        fi
+    done
+
+    readarray -d "" plugin_dirs < <(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 1 -mindepth 1 -type d -print0)
+    for plugin_dir in "${plugin_dirs[@]}"
+    do
+        plugin_src_dir="${plugin_dir}/src"
+        if [ ! -d "${plugin_src_dir}" ]; then
+            continue
+        fi
+
+        readarray -d "" plugin_subcommands < <(find -L "${plugin_src_dir}" -maxdepth 1 -mindepth 1 -print0)
+        for subcommand in "${plugin_subcommands[@]}"
+        do
+            if [[ "${subcommand}" =~ ${ARG_SCRIPT_REGEX} ]]; then
+                echo "${subcommand}"
+            fi
+        done
+    done
+}
+export -f find_subcommand_scripts

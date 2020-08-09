@@ -6,11 +6,12 @@ if is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-subcommand_scripts=$(find "${LXQ_SCRIPT_DIR}" -regex ".*/lxq-plugin-[a-z]+\.sh")
+subcommand_regex="/lxq-plugin-([a-z]+)\\.sh$"
+readarray -t subcommand_scripts < <(find_subcommand_scripts "${subcommand_regex}")
 
 function print_subcommand_summary() {
     full_script_path="${1}"
-    if [[ $full_script_path =~ /lxq-plugin-([a-z]+)\.sh ]]; then
+    if [[ $full_script_path =~ ${subcommand_regex} ]]; then
         command_name="${BASH_REMATCH[1]}"
         summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
         printf "  %s%s\n" "${command_name}" "${summary}" >&2
@@ -24,7 +25,7 @@ function show_usage() {
     printf "\n" >&2
     printf "Available commands:\n" >&2
 
-    for s in $subcommand_scripts
+    for s in "${subcommand_scripts[@]}"
     do
         print_subcommand_summary "${s}"
     done
@@ -43,7 +44,7 @@ function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
 
-        for s in $subcommand_scripts
+        for s in "${subcommand_scripts[@]}"
         do
             if [ "${LXQ_SCRIPT_DIR}/lxq-plugin-${1}.sh" == "${s}" ]; then
                 LXQ_COMMAND="${1}"
