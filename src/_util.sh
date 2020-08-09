@@ -64,20 +64,16 @@ export -f start_lxc_net
 function lxq_hook() {
 
     is_set "${1+x}" || panic "Expecting hook name as parameter, i.e. 'sandbox/pre-start'"
+    readonly HOOK_NAME="${1}"
 
-    readonly LXQ_HOOK_DIR="${LXQ_REPO_DIR}/hooks"
-    hook_path="${LXQ_HOOK_DIR}/${1}.sh"
-    if [ -e "${hook_path}" ]; then
-        "${hook_path}"
-    fi
+    hook_path="${LXQ_REPO_DIR}/hooks/${HOOK_NAME}.sh"
+    test -e "${hook_path}" && "${hook_path}"
 
-    plugin_hook_dirs=$(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 2 -mindepth 2 -name hooks -type d)
-    for d in $plugin_hook_dirs
+    plugin_dirs=$(find -L "${LXQ_PLUGIN_DIR}" -maxdepth 1 -mindepth 1 -type d)
+    for plugin_dir in $plugin_dirs
     do
-        hook_path="${d}/${1}.sh"
-        if [ -e "${hook_path}" ]; then
-            "${hook_path}"
-        fi
+        hook_path="${plugin_dir}/hooks/${HOOK_NAME}.sh"
+        test -e "${hook_path}" && "${hook_path}"
     done
 }
 export -f lxq_hook
