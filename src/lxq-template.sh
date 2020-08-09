@@ -6,15 +6,41 @@ if is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
+subcommand_regex="/lxq-template-([a-z]+)\\.sh$"
+readarray -t subcommand_scripts < <(find_subcommand_scripts "${subcommand_regex}")
+
+declare -A subcommands
+for script in "${subcommand_scripts[@]}"
+do
+    if [[ "$script" =~ ${subcommand_regex} ]]; then
+        subcom="${BASH_REMATCH[1]}"
+        subcommands["${subcom}"]="${script}"
+    else
+        panic "$script did not match regex as expected."
+    fi
+done
+
+function print_subcommand_summary() {
+    full_script_path="${1}"
+    if [[ $full_script_path =~ ${subcommand_regex} ]]; then
+        command_name="${BASH_REMATCH[1]}"
+        summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
+        printf "  %s%s\n" "${command_name}" "${summary}" >&2
+    else
+        panic "${full_script_path} did not match regex as expected."
+    fi
+}
+
 function show_usage() {
     printf "Usage: lxq template [command]\n" >&2
     printf "\n" >&2
     printf "Available commands:\n" >&2
-    printf "  list\t\tList templates\n" >&2
-    printf "  create\tCreate a template\n" >&2
-    printf "  destroy\tDestroy a template\n" >&2
-    printf "  attach\tAttach a terminal to a template\n" >&2
-    printf "  edit\t\tEdit LXC config for a template\n" >&2
+
+    for s in "${subcommand_scripts[@]}"
+    do
+        print_subcommand_summary "${s}"
+    done
+
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -28,26 +54,9 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-        case "$1" in
-            list)
-                LXQ_COMMAND="list"
-            ;;
-            create)
-                LXQ_COMMAND="create"
-            ;;
-            destroy)
-                LXQ_COMMAND="destroy"
-            ;;
-            attach)
-                LXQ_COMMAND="attach"
-            ;;
-            edit)
-                LXQ_COMMAND="edit"
-            ;;
-        esac
-
-        if is_set "${LXQ_COMMAND+x}"; then
-            return
+        if is_set "${subcommands[${1}]+x}"; then
+            LXQ_COMMAND="${subcommands[${1}]}"
+            return # Let subcommands parse the rest of the parameters
         fi
     fi
 
@@ -71,9 +80,8 @@ function parse_commandline() {
 parse_commandline "$@"
 
 if is_set "${LXQ_COMMAND+x}"; then
-
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-template-${LXQ_COMMAND}.sh" "$@"
+    "${LXQ_COMMAND}" "$@"
     exit "${?}"
 fi
 

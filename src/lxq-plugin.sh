@@ -9,6 +9,17 @@ fi
 subcommand_regex="/lxq-plugin-([a-z]+)\\.sh$"
 readarray -t subcommand_scripts < <(find_subcommand_scripts "${subcommand_regex}")
 
+declare -A subcommands
+for script in "${subcommand_scripts[@]}"
+do
+    if [[ "$script" =~ ${subcommand_regex} ]]; then
+        subcom="${BASH_REMATCH[1]}"
+        subcommands["${subcom}"]="${script}"
+    else
+        panic "$script did not match regex as expected."
+    fi
+done
+
 function print_subcommand_summary() {
     full_script_path="${1}"
     if [[ $full_script_path =~ ${subcommand_regex} ]]; then
@@ -43,16 +54,9 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-
-        for s in "${subcommand_scripts[@]}"
-        do
-            if [ "${LXQ_SCRIPT_DIR}/lxq-plugin-${1}.sh" == "${s}" ]; then
-                LXQ_COMMAND="${1}"
-            fi
-        done
-
-        if is_set "${LXQ_COMMAND+x}"; then
-            return
+        if is_set "${subcommands[${1}]+x}"; then
+            LXQ_COMMAND="${subcommands[${1}]}"
+            return # Let subcommands parse the rest of the parameters
         fi
     fi
 
@@ -77,7 +81,7 @@ parse_commandline "$@"
 
 if is_set "${LXQ_COMMAND+x}"; then
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-plugin-${LXQ_COMMAND}.sh" "$@"
+    "${LXQ_COMMAND}" "$@"
     exit "${?}"
 fi
 

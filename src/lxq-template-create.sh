@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\tCreate a template"
+    exit 0
+fi
+
 readonly DEPENDENCIES=(lxc-create)
 readonly LXQ_TEMPLATES_DIR="${LXQ_REPO_DIR}/templates"
 

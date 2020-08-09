@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\tAttach a terminal to a template"
+    exit 0
+fi
+
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop)
 
 for dep in "${DEPENDENCIES[@]}"; do

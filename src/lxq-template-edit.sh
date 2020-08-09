@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\t\tEdit LXC config for a template"
+    exit 0
+fi
+
 readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
 
 function show_usage() {
