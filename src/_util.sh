@@ -81,3 +81,40 @@ function lxq_hook() {
     done
 }
 export -f lxq_hook
+
+function compile_config() {
+
+    is_set "${1+x}" || panic "Expecting source dir, i.e. 'LXQ_REPO_DIR/templates/default/config.d'."
+    is_set "${2+x}" || panic "Expecting dest config file, i.e. 'LXQ_REPO_DIR/templates/default/config'."
+
+    ARG_CONFIG_DIRS=()
+    while [ "${#}" -gt "0" ]; do
+
+        if [ "${#}" -gt "1" ]; then
+            ARG_CONFIG_DIRS+=("${1}")
+        else
+            ARG_DEST_CONFIG_FILE="${1}"
+        fi
+
+        shift 1
+    done
+
+    cat > "${ARG_DEST_CONFIG_FILE}" << EOF
+###############################################################################
+#    This file is auto-generated. Any changes you make here will be lost.     #
+###############################################################################
+EOF
+
+    for dir in "${ARG_CONFIG_DIRS[@]}"
+    do
+        if [ -d "${dir}" ]; then
+
+            config_files=$(find "${dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf" | sort)
+            for c in $config_files
+            do
+                cat "${c}" >> "${ARG_DEST_CONFIG_FILE}"
+            done
+        fi
+    done
+}
+export -f compile_config

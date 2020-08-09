@@ -61,12 +61,7 @@ template_config="${template_dir}/config"
 
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test ! -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
-mkdir --parent "${sandbox_dir}"
-
-sandbox_config_file="${sandbox_dir}/config"
-cat > "${sandbox_config_file}" << EOF
-lxc.include = ${template_config}
-EOF
+mkdir --parent "${sandbox_dir}/config.d"
 
 sandbox_meta_script="${sandbox_dir}/meta.sh"
 cat > "${sandbox_meta_script}" << EOF
@@ -80,6 +75,5 @@ EOF
 chmod u+x "${sandbox_meta_script}"
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
-    LXQ_SANDBOX_CONFIG_FILE="${sandbox_config_file}" \
     LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
     lxq_hook "sandbox/post-create"

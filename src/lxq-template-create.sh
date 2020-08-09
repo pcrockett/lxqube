@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 readonly DEPENDENCIES=(lxc-create)
-readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
+readonly LXQ_TEMPLATES_DIR="${LXQ_REPO_DIR}/templates"
 
 for dep in "${DEPENDENCIES[@]}"; do
     installed "${dep}" || panic "Missing '${dep}'"
@@ -64,10 +64,9 @@ is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 container_name="templ-${ARG_TEMPLATE_NAME}"
 new_lxc_config="${LXQ_PATH}/${container_name}/config"
 
-template_config_dir="${TEMPLATES_CONFIG_DIR}/${ARG_TEMPLATE_NAME}"
-if [ -d "${template_config_dir}" ]; then
-    panic "${template_config_dir} already exists."
-fi
+lxq_template_root="${LXQ_TEMPLATES_DIR}/${ARG_TEMPLATE_NAME}"
+test ! -d "${lxq_template_root}" ||  panic "${lxq_template_root} already exists."
+lxq_template_config_dir="${lxq_template_root}/config.d"
 
 if is_set "${ARG_CLONE+x}"; then
 
@@ -76,15 +75,14 @@ if is_set "${ARG_CLONE+x}"; then
         --newname "${container_name}" \
         --foreground
 
-    old_config_dir="${TEMPLATES_CONFIG_DIR}/${ARG_CLONE}"
-    cp -r "${old_config_dir}" "${template_config_dir}"
+    old_template_root="${LXQ_TEMPLATES_DIR}/${ARG_CLONE}"
+    cp -r "${old_template_root}" "${lxq_template_root}"
 
     # In the LXC config file, replace old LXQ config path with new LXQ config path
-    sed -i "s|${old_config_dir}|${template_config_dir}|g" "${new_lxc_config}"
+    sed -i "s|${old_template_root}|${lxq_template_root}|g" "${new_lxc_config}"
 
     LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
-        LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
-        LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
+        LXQ_TEMPLATE_CONFIG_DIR="${lxq_template_config_dir}" \
         LXQ_TEMPLATE_PARENT="${ARG_CLONE}" \
         lxq_hook "template/post-create"
 
@@ -98,15 +96,15 @@ else
         --arch "${LXQ_ARCH}" \
         --release "${LXQ_RELEASE}"
 
-    mkdir --parent "${template_config_dir}"
-    cat > "${template_config_dir}/config" << EOF
-# Use this file to add custom configuration for your template container. Make
-# sure to end the file with an empty line, as various plugins may need to
-# automatically append some settings to the file.
-EOF
+    mkdir --parent "${lxq_template_config_dir}"
+    compile_config "${lxq_template_config_dir}" "${lxq_template_root}/config"
 
     # Tell LXC to include our custom LXQ config
-    echo "lxc.include = ${template_config_dir}/config" >> "${new_lxc_config}"
+    cat >> "${new_lxc_config}" << EOF
+
+# LXQube configuration
+lxc.include = ${lxq_template_root}/config
+EOF
 
     start_lxc_net
 
@@ -130,8 +128,7 @@ EOF
         --state "STOPPED"
 
     LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
-        LXQ_TEMPLATE_CONFIG_DIR="${template_config_dir}" \
-        LXQ_TEMPLATE_CONFIG_FILE="${template_config_dir}/config" \
+        LXQ_TEMPLATE_CONFIG_DIR="${lxq_template_config_dir}" \
         lxq_hook "template/post-create"
 
 fi

@@ -53,9 +53,14 @@ is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
 start_lxc_net
 
 container_name="templ-${ARG_TEMPLATE_NAME}"
+lxq_template_root="${LXQ_REPO_ROOT}/templates/${ARG_TEMPLATE_NAME}"
+lxq_template_config_dir="${lxq_template_root}/config.d"
+test -d "${lxq_template_config_dir}" || mkdir --parent "${lxq_template_config_dir}"
 
 LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
     lxq_hook "template/pre-start"
+
+compile_config "${lxq_template_config_dir}" "${lxq_template_root}/config"
 
 lxc-start "${container_name}"
 lxc-wait --name "${container_name}" \
