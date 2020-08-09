@@ -60,9 +60,8 @@ sandbox_config_dir="${lxq_sandbox_dir}/config.d"
 sandbox_meta="${lxq_sandbox_dir}/meta.sh"
 
 # shellcheck source=/dev/null
-. "${sandbox_meta}" # This gives us variables like LXQ_TEMPLATE_NAME and LXQ_TEMPLATE_CONFIG
+. "${sandbox_meta}" # This gives us variables like LXQ_TEMPLATE_NAME
 
-lxq_template_config_dir="${LXQ_REPO_DIR}/templates/${LXQ_TEMPLATE_NAME}/config.d"
 template_cont_name="templ-${LXQ_TEMPLATE_NAME}"
 sandbox_cont_name="sbox-${ARG_SANDBOX_NAME}"
 
@@ -71,12 +70,15 @@ lxc-copy --name "${template_cont_name}" \
     --foreground \
     --tmpfs
 
+lxq_template_root="${LXQ_REPO_DIR}/templates/${LXQ_TEMPLATE_NAME}"
+lxq_template_config_file="${lxq_template_root}/config"
 lxc_config="${LXQ_PATH}/${sandbox_cont_name}/config"
-sed -i "s|${LXQ_TEMPLATE_CONFIG}|${sandbox_config_file}|g" "${lxc_config}"
+sed -i "s|${lxq_template_config_file}|${sandbox_config_file}|g" "${lxc_config}"
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     lxq_hook "sandbox/pre-start"
 
+lxq_template_config_dir="${lxq_template_root}/config.d"
 compile_config "${lxq_template_config_dir}" "${sandbox_config_dir}" "${sandbox_config_file}"
 
 lxc-start "${sandbox_cont_name}"
