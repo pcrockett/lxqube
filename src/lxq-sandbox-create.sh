@@ -57,11 +57,11 @@ is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
 
 template_dir="${LXQ_REPO_DIR}/templates/${ARG_TEMPLATE_NAME}"
 test -d "${template_dir}" || panic "Template ${ARG_TEMPLATE_NAME} does not exist."
-template_config="${template_dir}/config"
 
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test ! -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
 mkdir --parent "${sandbox_dir}/config.d"
+compile_config "${template_dir}/config.d" "${sandbox_dir}/config.d" "${sandbox_dir}/config"
 
 sandbox_meta_script="${sandbox_dir}/meta.sh"
 cat > "${sandbox_meta_script}" << EOF
@@ -69,7 +69,6 @@ cat > "${sandbox_meta_script}" << EOF
 set -Eeuo pipefail
 
 export LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}"
-export LXQ_TEMPLATE_CONFIG="${template_config}"
 EOF
 
 chmod u+x "${sandbox_meta_script}"
