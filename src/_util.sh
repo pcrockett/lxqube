@@ -76,6 +76,25 @@ function lxq_hook() {
     do
         hook_path="${plugin_dir}/hooks/${HOOK_NAME}.sh"
         if [ -e "${hook_path}" ]; then
+
+            default_config_path="${plugin_dir}/default-config.sh"
+            if [ -e "${default_config_path}" ]; then
+                # shellcheck source=/dev/null
+                . "${default_config_path}"
+            fi
+
+            user_config_path="${plugin_dir}/user-config.sh"
+            if [ -e "${user_config_path}" ]; then
+                # shellcheck source=/dev/null
+                . "${user_config_path}"
+            fi
+
+            util_path="${plugin_dir}/src/_util.sh"
+            if [ -e "${util_path}" ]; then
+                # shellcheck source=/dev/null
+                . "${util_path}"
+            fi
+
             "${hook_path}"
         fi
     done
@@ -106,7 +125,7 @@ function compile_config() {
     declare -A all_config_files
     for config_dir in "${ARG_CONFIG_DIRS[@]}"
     do
-        readarray -d '' config_files <  <(find "${config_dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf" -print0)
+        readarray -d '' config_files < <(find "${config_dir}" -maxdepth 1 -mindepth 1 -type f -name "*.conf" -print0)
         for config_file in "${config_files[@]}"
         do
             config_name=$(basename "${config_file}")
