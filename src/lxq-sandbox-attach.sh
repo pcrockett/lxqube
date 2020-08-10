@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\tAttach a terminal to a sandbox"
+    exit 0
+fi
+
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy)
 
 for dep in "${DEPENDENCIES[@]}"; do
@@ -12,7 +17,7 @@ function show_usage() {
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
-    printf "  -r, --root\t\tLogin as root\n"
+    printf "  -r, --root\t\tLogin as root\n" >&2
 }
 
 function show_usage_and_exit() {

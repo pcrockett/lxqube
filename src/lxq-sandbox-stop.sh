@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\t\tStop a sandbox"
+    exit 0
+fi
+
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy)
 
 for dep in "${DEPENDENCIES[@]}"; do

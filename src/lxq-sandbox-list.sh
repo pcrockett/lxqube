@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\t\tList sandboxes"
+    exit 0
+fi
+
 function show_usage() {
     printf "Usage: lxq sandbox list\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
-    printf "  -r, --running\t\tList running sandboxes\n"
+    printf "  -r, --running\t\tList running sandboxes\n" >&2
 }
 
 function show_usage_and_exit() {

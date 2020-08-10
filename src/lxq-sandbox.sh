@@ -6,19 +6,44 @@ if is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
+subcommand_regex="/lxq-sandbox-([a-z]+)\\.sh$"
+readarray -t subcommand_scripts < <(find_subcommand_scripts "${subcommand_regex}")
+
+declare -A subcommands
+for script in "${subcommand_scripts[@]}"
+do
+    if [[ "$script" =~ ${subcommand_regex} ]]; then
+        subcom="${BASH_REMATCH[1]}"
+        subcommands["${subcom}"]="${script}"
+    else
+        panic "$script did not match regex as expected."
+    fi
+done
+
+function print_subcommand_summary() {
+    full_script_path="${1}"
+    if [[ $full_script_path =~ ${subcommand_regex} ]]; then
+        command_name="${BASH_REMATCH[1]}"
+        summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
+        printf "  %s%s\n" "${command_name}" "${summary}" >&2
+    else
+        panic "${full_script_path} did not match regex as expected."
+    fi
+}
+
 function show_usage() {
     printf "Usage: lxq sandbox [command]\n" >&2
     printf "\n" >&2
     printf "Available commands:\n" >&2
-    printf "  list\t\tList sandboxes\n" >&2
-    printf "  create\tCreate a sandbox\n" >&2
-    printf "  start\t\tStart a sandbox\n" >&2
-    printf "  attach\tAttach a terminal to a sandbox\n" >&2
-    printf "  stop\t\tStop a sandbox\n" >&2
-    printf "  destroy\tDestroy a sandbox\n" >&2
+
+    for s in "${subcommand_scripts[@]}"
+    do
+        print_subcommand_summary "${s}"
+    done
+
     printf "\n" >&2
     printf "Flags:\n">&2
-    printf "  -h, --help\tShow help message then exit\n" >&2
+    printf "  -h, --help\t\tShow help message then exit\n" >&2
 }
 
 function show_usage_and_exit() {
@@ -29,29 +54,9 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-        case "$1" in
-            list)
-                LXQ_COMMAND="list"
-            ;;
-            create)
-                LXQ_COMMAND="create"
-            ;;
-            start)
-                LXQ_COMMAND="start"
-            ;;
-            attach)
-                LXQ_COMMAND="attach"
-            ;;
-            stop)
-                LXQ_COMMAND="stop"
-            ;;
-            destroy)
-                LXQ_COMMAND="destroy"
-            ;;
-        esac
-
-        if is_set "${LXQ_COMMAND+x}"; then
-            return
+        if is_set "${subcommands[${1}]+x}"; then
+            LXQ_COMMAND="${subcommands[${1}]}"
+            return # Let subcommands parse the rest of the parameters
         fi
     fi
 
@@ -83,7 +88,7 @@ if is_set "${LXQ_COMMAND+x}"; then
     fi
 
     shift 1
-    "${LXQ_SCRIPT_DIR}/lxq-sandbox-${LXQ_COMMAND}.sh" "$@"
+    "${LXQ_COMMAND}" "$@"
     exit "${?}"
 fi
 

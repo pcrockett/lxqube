@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+    printf "\t\tCreate a sandbox"
+    exit 0
+fi
+
 function show_usage() {
     printf "Usage: lxq sandbox create [sandbox-name] --template [template-name]\n" >&2
     printf "\n" >&2
