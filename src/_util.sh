@@ -155,16 +155,26 @@ EOF
 }
 export -f compile_config
 
-function find_subcommand_scripts() {
+declare -A LXQ_SUBCOMMANDS
+export LXQ_SUBCOMMANDS
+
+function find_subcommands() {
 
     is_set "${1+x}" || panic "Expecting single script name regex argument."
     ARG_SCRIPT_REGEX="${1}"
 
-    readarray -d "" local_subcommands < <(find "${LXQ_SCRIPT_DIR}" -maxdepth 1 -mindepth 1 -print0)
-    for subcommand in "${local_subcommands[@]}"
+    # Clear out the subcommand dictionary first
+    for key in "${!LXQ_SUBCOMMANDS[@]}"
     do
-        if [[ "${subcommand}" =~ ${ARG_SCRIPT_REGEX} ]]; then
-            echo "${subcommand}"
+        unset LXQ_SUBCOMMANDS["${key}"]
+    done
+
+    readarray -d "" local_subcommand_scripts < <(find "${LXQ_SCRIPT_DIR}" -maxdepth 1 -mindepth 1 -print0)
+    for subcommand_script in "${local_subcommand_scripts[@]}"
+    do
+        if [[ "${subcommand_script}" =~ ${ARG_SCRIPT_REGEX} ]]; then
+            subcommand="${BASH_REMATCH[1]}"
+            LXQ_SUBCOMMANDS["${subcommand}"]="${subcommand_script}"
         fi
     done
 
@@ -176,13 +186,24 @@ function find_subcommand_scripts() {
             continue
         fi
 
-        readarray -d "" plugin_subcommands < <(find -L "${plugin_src_dir}" -maxdepth 1 -mindepth 1 -print0)
-        for subcommand in "${plugin_subcommands[@]}"
+        readarray -d "" plugin_subcommand_scripts < <(find -L "${plugin_src_dir}" -maxdepth 1 -mindepth 1 -print0)
+        for subcommand_script in "${plugin_subcommand_scripts[@]}"
         do
-            if [[ "${subcommand}" =~ ${ARG_SCRIPT_REGEX} ]]; then
-                echo "${subcommand}"
+            if [[ "${subcommand_script}" =~ ${ARG_SCRIPT_REGEX} ]]; then
+                subcommand="${BASH_REMATCH[1]}"
+                LXQ_SUBCOMMANDS["${subcommand}"]="${subcommand_script}"
             fi
         done
     done
 }
-export -f find_subcommand_scripts
+export -f find_subcommands
+
+function print_subcommand_summaries() {
+    for subcommand in "${!LXQ_SUBCOMMANDS[@]}"
+    do
+        full_script_path="${LXQ_SUBCOMMANDS["${subcommand}"]}"
+        summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
+        printf "  %s%s\n" "${subcommand}" "${summary}" >&2
+    done
+}
+export -f print_subcommand_summaries

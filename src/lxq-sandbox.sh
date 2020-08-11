@@ -6,40 +6,14 @@ if is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-subcommand_regex="/lxq-sandbox-([a-z]+)\\.sh$"
-readarray -t subcommand_scripts < <(find_subcommand_scripts "${subcommand_regex}")
-
-declare -A subcommands
-for script in "${subcommand_scripts[@]}"
-do
-    if [[ "$script" =~ ${subcommand_regex} ]]; then
-        subcom="${BASH_REMATCH[1]}"
-        subcommands["${subcom}"]="${script}"
-    else
-        panic "$script did not match regex as expected."
-    fi
-done
-
-function print_subcommand_summary() {
-    full_script_path="${1}"
-    if [[ $full_script_path =~ ${subcommand_regex} ]]; then
-        command_name="${BASH_REMATCH[1]}"
-        summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
-        printf "  %s%s\n" "${command_name}" "${summary}" >&2
-    else
-        panic "${full_script_path} did not match regex as expected."
-    fi
-}
+find_subcommands "/lxq-sandbox-([a-z]+)\\.sh$"
 
 function show_usage() {
     printf "Usage: lxq sandbox [command]\n" >&2
     printf "\n" >&2
     printf "Available commands:\n" >&2
 
-    for s in "${subcommand_scripts[@]}"
-    do
-        print_subcommand_summary "${s}"
-    done
+    print_subcommand_summaries
 
     printf "\n" >&2
     printf "Flags:\n">&2
@@ -54,8 +28,8 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-        if is_set "${subcommands[${1}]+x}"; then
-            LXQ_COMMAND="${subcommands[${1}]}"
+        if is_set "${LXQ_SUBCOMMANDS[${1}]+x}"; then
+            LXQ_COMMAND="${LXQ_SUBCOMMANDS[${1}]}"
             return # Let subcommands parse the rest of the parameters
         fi
     fi
