@@ -39,13 +39,11 @@ export -f lxq_panic
 
 function lxq_check_dependencies() {
 
-    lxq_is_set "${1+x}" || lxq_panic "Expecting array of dependencies as single argument."
-
     function installed() {
         command -v "$1" >/dev/null 2>&1
     }
 
-    for dep in "${1[@]}"; do
+    for dep in "${@}"; do
         installed "${dep}" || lxq_panic "Missing '${dep}'"
     done
 }

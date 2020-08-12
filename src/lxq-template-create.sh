@@ -6,10 +6,9 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-readonly DEPENDENCIES=(lxc-create)
 readonly LXQ_TEMPLATES_DIR="${LXQ_REPO_DIR}/templates"
 
-lxq_check_dependencies "${DEPENDENCIES[@]}"
+lxq_check_dependencies lxc-create
 
 function show_usage() {
     printf "Usage: lxq template create [template-name]\n" >&2

@@ -6,10 +6,9 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-readonly DEPENDENCIES=(lxc-destroy)
 readonly TEMPLATES_CONFIG_DIR="${LXQ_REPO_DIR}/templates"
 
-lxq_check_dependencies "${DEPENDENCIES[@]}"
+lxq_check_dependencies lxc-destroy
 
 function show_usage() {
     printf "Usage: lxq template destroy [template-name]\n" >&2

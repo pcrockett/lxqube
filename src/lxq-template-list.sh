@@ -6,8 +6,7 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop)
-lxq_check_dependencies "${DEPENDENCIES[@]}"
+lxq_check_dependencies lxc-start lxc-wait lxc-attach lxc-stop
 
 function show_usage() {
     printf "Usage: lxq template list\n" >&2
