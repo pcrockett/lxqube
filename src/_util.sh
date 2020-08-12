@@ -49,6 +49,7 @@ function lxq_check_dependencies() {
         installed "${dep}" || lxq_panic "Missing '${dep}'"
     done
 }
+export -f lxq_check_dependencies
 
 function lxq_is_set() {
     # Use this like so:
