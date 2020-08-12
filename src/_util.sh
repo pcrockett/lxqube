@@ -190,7 +190,17 @@ function lxq_populate_subcommands() {
 export -f lxq_populate_subcommands
 
 function print_subcommand_summaries() {
-    for subcommand in "${!LXQ_SUBCOMMANDS[@]}"
+
+    function get_subcommands() {
+        for s in "${!LXQ_SUBCOMMANDS[@]}"
+        do
+            echo "${s}"
+        done
+    }
+
+    readarray -t sorted_subcommands < <(get_subcommands | sort)
+
+    for subcommand in "${sorted_subcommands[@]}"
     do
         full_script_path="${LXQ_SUBCOMMANDS["${subcommand}"]}"
         summary=$(LXQ_SHORT_SUMMARY=1 "${full_script_path}")
