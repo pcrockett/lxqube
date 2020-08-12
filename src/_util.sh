@@ -155,19 +155,10 @@ EOF
 }
 export -f compile_config
 
-declare -A LXQ_SUBCOMMANDS
-export LXQ_SUBCOMMANDS
-
-function find_subcommands() {
+function lxq_populate_subcommands() {
 
     is_set "${1+x}" || panic "Expecting single script name regex argument."
     ARG_SCRIPT_REGEX="${1}"
-
-    # Clear out the subcommand dictionary first
-    for key in "${!LXQ_SUBCOMMANDS[@]}"
-    do
-        unset LXQ_SUBCOMMANDS["${key}"]
-    done
 
     readarray -d "" local_subcommand_scripts < <(find "${LXQ_SCRIPT_DIR}" -maxdepth 1 -mindepth 1 -print0)
     for subcommand_script in "${local_subcommand_scripts[@]}"
@@ -196,7 +187,7 @@ function find_subcommands() {
         done
     done
 }
-export -f find_subcommands
+export -f lxq_populate_subcommands
 
 function print_subcommand_summaries() {
     for subcommand in "${!LXQ_SUBCOMMANDS[@]}"

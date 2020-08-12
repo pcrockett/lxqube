@@ -6,7 +6,8 @@ if is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-find_subcommands "/lxq-template-([a-z]+)\\.sh$"
+declare -A LXQ_SUBCOMMANDS
+lxq_populate_subcommands "/lxq-template-([a-z]+)\\.sh$"
 
 function show_usage() {
     printf "Usage: lxq template [command]\n" >&2

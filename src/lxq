@@ -9,7 +9,8 @@ readonly UTIL_SCRIPT="${SCRIPT_DIR}/_util.sh"
 # shellcheck source=/dev/null
 . "${UTIL_SCRIPT}"
 
-find_subcommands "/lxq-([a-z]+)\\.sh$"
+declare -A LXQ_SUBCOMMANDS
+lxq_populate_subcommands "/lxq-([a-z]+)\\.sh$"
 
 function show_usage() {
     printf "Usage: %s [command]\n" "${SCRIPT_NAME}" >&2
