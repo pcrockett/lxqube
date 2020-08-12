@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\tUpdate a plugin"
     exit 0
 fi
@@ -28,7 +28,7 @@ function parse_commandline() {
                 ARG_HELP="true"
             ;;
             *)
-                if is_set "${ARG_PLUGIN_NAME+x}"; then
+                if lxq_is_set "${ARG_PLUGIN_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
                     show_usage_and_exit
                 else
@@ -43,15 +43,15 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
-is_set "${ARG_PLUGIN_NAME+x}" || panic "No plugin name specified."
-test -d "${LXQ_PLUGIN_DIR}" || panic "Plugin \"${ARG_PLUGIN_NAME}\" is not installed."
+lxq_is_set "${ARG_PLUGIN_NAME+x}" || lxq_panic "No plugin name specified."
+test -d "${LXQ_PLUGIN_DIR}" || lxq_panic "Plugin \"${ARG_PLUGIN_NAME}\" is not installed."
 
 plugin_dir="${LXQ_PLUGIN_DIR}/${ARG_PLUGIN_NAME}"
-test -d "${plugin_dir}" || panic "Plugin \"${ARG_PLUGIN_NAME}\" is not installed."
+test -d "${plugin_dir}" || lxq_panic "Plugin \"${ARG_PLUGIN_NAME}\" is not installed."
 
 pushd "${plugin_dir}" > /dev/null
 git pull || true

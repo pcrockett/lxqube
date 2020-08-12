@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\tCreate a template"
     exit 0
 fi
@@ -9,9 +9,7 @@ fi
 readonly DEPENDENCIES=(lxc-create)
 readonly LXQ_TEMPLATES_DIR="${LXQ_REPO_DIR}/templates"
 
-for dep in "${DEPENDENCIES[@]}"; do
-    installed "${dep}" || panic "Missing '${dep}'"
-done
+lxq_check_dependencies "${DEPENDENCIES[@]}"
 
 function show_usage() {
     printf "Usage: lxq template create [template-name]\n" >&2
@@ -45,7 +43,7 @@ function parse_commandline() {
                 fi
             ;;
             *)
-                if is_set "${ARG_TEMPLATE_NAME+x}"; then
+                if lxq_is_set "${ARG_TEMPLATE_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
                     show_usage_and_exit
                 else
@@ -60,20 +58,20 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
-is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
+lxq_is_set "${ARG_TEMPLATE_NAME+x}" || lxq_panic "No template name specified."
 
 container_name="templ-${ARG_TEMPLATE_NAME}"
 new_lxc_config="${LXQ_PATH}/${container_name}/config"
 
 lxq_template_root="${LXQ_TEMPLATES_DIR}/${ARG_TEMPLATE_NAME}"
-test ! -d "${lxq_template_root}" ||  panic "${lxq_template_root} already exists."
+test ! -d "${lxq_template_root}" ||  lxq_panic "${lxq_template_root} already exists."
 lxq_template_config_dir="${lxq_template_root}/config.d"
 
-if is_set "${ARG_CLONE+x}"; then
+if lxq_is_set "${ARG_CLONE+x}"; then
 
     parent_container_name="templ-${ARG_CLONE}"
     lxc-copy --name "${parent_container_name}" \
@@ -102,7 +100,7 @@ else
         --release "${LXQ_RELEASE}"
 
     mkdir --parent "${lxq_template_config_dir}"
-    compile_config "${lxq_template_config_dir}" "${lxq_template_root}/config"
+    lxq_compile_config "${lxq_template_config_dir}" "${lxq_template_root}/config"
 
     # Tell LXC to include our custom LXQ config
     cat >> "${new_lxc_config}" << EOF
@@ -111,7 +109,7 @@ else
 lxc.include = ${lxq_template_root}/config
 EOF
 
-    start_lxc_net
+    lxq_start_net_svc
 
     lxc-start --name "${container_name}"
     lxc-wait --name "${container_name}" \

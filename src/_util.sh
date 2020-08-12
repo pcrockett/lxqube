@@ -31,39 +31,47 @@ export LXQ_REPO_DIR
 readonly LXQ_PLUGIN_DIR="${LXQ_REPO_DIR}/plugins"
 export LXQ_PLUGIN_DIR
 
-function panic() {
+function lxq_panic() {
     >&2 echo "Fatal: $*"
     exit 1
 }
-export -f panic
+export -f lxq_panic
 
-function installed() {
-    command -v "$1" >/dev/null 2>&1
+function lxq_check_dependencies() {
+
+    lxq_is_set "${1+x}" || lxq_panic "Expecting array of dependencies as single argument."
+
+    function installed() {
+        command -v "$1" >/dev/null 2>&1
+    }
+
+    for dep in "${1[@]}"; do
+        installed "${dep}" || lxq_panic "Missing '${dep}'"
+    done
 }
-export -f installed
 
-function is_set() {
+function lxq_is_set() {
     # Use this like so:
     #
-    #     is_set "${VAR_NAME+x}" || show_usage_and_exit
+    #     lxq_is_set "${VAR_NAME+x}" || show_usage_and_exit
     #
     # https://stackoverflow.com/a/13864829
 
     test ! -z "$1"
 }
-export -f is_set
+export -f lxq_is_set
 
-function start_lxc_net() {
+function lxq_start_net_svc() {
     if [ "$(systemctl is-active lxc-net)" != "active" ]; then
         echo "Starting lxc-net service..."
         sudo systemctl start lxc-net
     fi
 }
-export -f start_lxc_net
+export -f lxq_start_net_svc
 
 function lxq_hook() {
 
-    is_set "${1+x}" || panic "Expecting hook name as parameter, i.e. 'sandbox/pre-start'"
+    lxq_is_set "${1+x}" || lxq_panic "Expecting hook name as parameter, i.e. 'sandbox/pre-start'"
     HOOK_NAME="${1}"
 
     hook_path="${LXQ_REPO_DIR}/hooks/${HOOK_NAME}.sh"
@@ -101,9 +109,9 @@ function lxq_hook() {
 }
 export -f lxq_hook
 
-function compile_config() {
+function lxq_compile_config() {
 
-    test "${#}" -ge 2 || panic "Usage: compile_config [config-dirs...] [output-config-file]"
+    test "${#}" -ge 2 || lxq_panic "Usage: lxq_compile_config [config-dirs...] [output-config-file]"
 
     ARG_CONFIG_DIRS=()
     while [ "${#}" -gt "0" ]; do
@@ -113,7 +121,7 @@ function compile_config() {
             if [ -d "${config_dir}" ]; then
                 ARG_CONFIG_DIRS+=("${config_dir}")
             else
-                panic "${config_dir} is not a directory."
+                lxq_panic "${config_dir} is not a directory."
             fi
         else
             ARG_DEST_CONFIG_FILE="${1}"
@@ -153,11 +161,11 @@ EOF
         cat "${config_file}" >> "${ARG_DEST_CONFIG_FILE}"
     done
 }
-export -f compile_config
+export -f lxq_compile_config
 
 function lxq_populate_subcommands() {
 
-    is_set "${1+x}" || panic "Expecting single script name regex argument."
+    lxq_is_set "${1+x}" || lxq_panic "Expecting single script name regex argument."
     ARG_SCRIPT_REGEX="${1}"
 
     readarray -d "" local_subcommand_scripts < <(find "${LXQ_SCRIPT_DIR}" -maxdepth 1 -mindepth 1 -print0)
@@ -189,7 +197,7 @@ function lxq_populate_subcommands() {
 }
 export -f lxq_populate_subcommands
 
-function print_subcommand_summaries() {
+function lxq_print_subcommand_summaries() {
 
     function get_subcommands() {
         for s in "${!LXQ_SUBCOMMANDS[@]}"
@@ -207,4 +215,4 @@ function print_subcommand_summaries() {
         printf "  %s%s\n" "${subcommand}" "${summary}" >&2
     done
 }
-export -f print_subcommand_summaries
+export -f lxq_print_subcommand_summaries

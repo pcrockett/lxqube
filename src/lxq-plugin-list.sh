@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\t\tShow currently installed plugins"
     exit 0
 fi
@@ -39,7 +39,7 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 

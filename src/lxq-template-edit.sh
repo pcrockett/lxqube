@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\t\tEdit LXC config for a template"
     exit 0
 fi
@@ -30,7 +30,7 @@ function parse_commandline() {
                 ARG_HELP="true"
             ;;
             *)
-                if is_set "${ARG_TEMPLATE_NAME+x}"; then
+                if lxq_is_set "${ARG_TEMPLATE_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
                     show_usage_and_exit
                 else
@@ -45,21 +45,25 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
-is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
+lxq_is_set "${ARG_TEMPLATE_NAME+x}" || lxq_panic "No template name specified."
 
 CONFIG_PATH="${TEMPLATES_CONFIG_DIR}/${ARG_TEMPLATE_NAME}/config"
 if [ ! -f "${CONFIG_PATH}" ]; then
-    panic "${CONFIG_PATH} does not exist."
+    lxq_panic "${CONFIG_PATH} does not exist."
 fi
 
-if is_set "${EDITOR+x}"; then
+function installed() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+if lxq_is_set "${EDITOR+x}"; then
     "${EDITOR}" "${CONFIG_PATH}"
 elif installed "nano"; then
     nano "${CONFIG_PATH}"
 else
-    panic "No text editor defined. Set EDITOR environment variable to your desired text editor."
+    lxq_panic "No text editor defined. Set EDITOR environment variable to your desired text editor."
 fi

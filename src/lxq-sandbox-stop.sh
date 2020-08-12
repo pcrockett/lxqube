@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\t\tStop a sandbox"
     exit 0
 fi
 
 readonly DEPENDENCIES=(lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy)
-
-for dep in "${DEPENDENCIES[@]}"; do
-    installed "${dep}" || panic "Missing '${dep}'"
-done
+lxq_check_dependencies "${DEPENDENCIES[@]}"
 
 function show_usage() {
     printf "Usage: lxq sandbox stop [sandbox-name]\n" >&2
@@ -34,7 +31,7 @@ function parse_commandline() {
                 ARG_HELP="true"
             ;;
             *)
-                if is_set "${ARG_SANDBOX_NAME+x}"; then
+                if lxq_is_set "${ARG_SANDBOX_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
                     show_usage_and_exit
                 else
@@ -49,14 +46,14 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
-is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
+lxq_is_set "${ARG_SANDBOX_NAME+x}" || lxq_panic "No sandbox name specified."
 
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
-test -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
+test -d "${sandbox_dir}" || lxq_panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     lxq_hook "sandbox/pre-stop"

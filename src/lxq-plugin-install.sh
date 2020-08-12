@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\tInstall a plugin"
     exit 0
 fi
@@ -32,25 +32,25 @@ function parse_commandline() {
                 ARG_HELP="true"
             ;;
             -d|--dir)
-                if is_set "${ARG_CLONE+x}"; then
-                    panic "Cannot use --dir and --clone arguments together."
+                if lxq_is_set "${ARG_CLONE+x}"; then
+                    lxq_panic "Cannot use --dir and --clone arguments together."
                 fi
 
                 shift 1
                 if [ "${#}" -lt "1" ]; then
-                    panic "No directory path specified."
+                    lxq_panic "No directory path specified."
                 fi
 
                 ARG_DIR="${1}"
             ;;
             -c|--clone)
-                if is_set "${ARG_DIR+x}"; then
-                    panic "Cannot use --dir and --clone arguments together."
+                if lxq_is_set "${ARG_DIR+x}"; then
+                    lxq_panic "Cannot use --dir and --clone arguments together."
                 fi
 
                 shift 1
                 if [ "${#}" -lt "1" ]; then
-                    panic "No Git URL specified."
+                    lxq_panic "No Git URL specified."
                 fi
 
                 ARG_CLONE="${1}"
@@ -67,49 +67,49 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
 test -d "${LXQ_PLUGIN_DIR}" || mkdir --parent "${LXQ_PLUGIN_DIR}"
 
-if is_set "${ARG_DIR+x}"; then
+if lxq_is_set "${ARG_DIR+x}"; then
 
-    test -d "${ARG_DIR}" || panic "${ARG_DIR} is not a valid directory."
+    test -d "${ARG_DIR}" || lxq_panic "${ARG_DIR} is not a valid directory."
     ARG_DIR=$(readlink -f "${ARG_DIR}")
     manifest="${ARG_DIR}/lxq-manifest.sh"
-    test -e "${manifest}" || panic "No valid lxq-manifest.sh found in ${ARG_DIR}."
+    test -e "${manifest}" || lxq_panic "No valid lxq-manifest.sh found in ${ARG_DIR}."
 
     # shellcheck source=/dev/null
     . "${manifest}"
 
-    is_set "${LXQ_PLUGIN_NAME+x}" || panic "Expected LXQ_PLUGIN_NAME environment variable to be exported from manifest."
+    lxq_is_set "${LXQ_PLUGIN_NAME+x}" || lxq_panic "Expected LXQ_PLUGIN_NAME environment variable to be exported from manifest."
 
     dest_plugin_dir="${LXQ_PLUGIN_DIR}/${LXQ_PLUGIN_NAME}"
-    test ! -d "${dest_plugin_dir}" || panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
+    test ! -d "${dest_plugin_dir}" || lxq_panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
     ln --symbolic "${ARG_DIR}" "${dest_plugin_dir}"
 
-elif is_set "${ARG_CLONE+x}"; then
+elif lxq_is_set "${ARG_CLONE+x}"; then
 
     temp_dir="${LXQ_PLUGIN_DIR}/.temp"
     test ! -d "${temp_dir}" || rm -rf "${temp_dir}"
     git clone "${ARG_CLONE}" "${temp_dir}"
 
     manifest="${temp_dir}/lxq-manifest.sh"
-    test -e "${manifest}" || panic "No valid lxq-manifest.sh found in ${ARG_CLONE}."
+    test -e "${manifest}" || lxq_panic "No valid lxq-manifest.sh found in ${ARG_CLONE}."
 
     # shellcheck source=/dev/null
     . "${manifest}"
 
-    is_set "${LXQ_PLUGIN_NAME+x}" || panic "Expected LXQ_PLUGIN_NAME environment variable to be exported from manifest."
+    lxq_is_set "${LXQ_PLUGIN_NAME+x}" || lxq_panic "Expected LXQ_PLUGIN_NAME environment variable to be exported from manifest."
 
     dest_plugin_dir="${LXQ_PLUGIN_DIR}/${LXQ_PLUGIN_NAME}"
-    test ! -d "${dest_plugin_dir}" || panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
+    test ! -d "${dest_plugin_dir}" || lxq_panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
 
     mv "${temp_dir}" "${dest_plugin_dir}"
 
 else
-    panic "Must specify at least --dir or --git."
+    lxq_panic "Must specify at least --dir or --git."
 fi
 
 # TODO: Run install script in plugin dir?

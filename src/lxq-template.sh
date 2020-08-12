@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\tManage sandbox templates"
     exit 0
 fi
@@ -14,7 +14,7 @@ function show_usage() {
     printf "\n" >&2
     printf "Available commands:\n" >&2
 
-    print_subcommand_summaries
+    lxq_print_subcommand_summaries
 
     printf "\n" >&2
     printf "Flags:\n">&2
@@ -29,7 +29,7 @@ function show_usage_and_exit() {
 function parse_commandline() {
 
     if [ "${#}" -gt "0" ]; then
-        if is_set "${LXQ_SUBCOMMANDS[${1}]+x}"; then
+        if lxq_is_set "${LXQ_SUBCOMMANDS[${1}]+x}"; then
             LXQ_COMMAND="${LXQ_SUBCOMMANDS[${1}]}"
             return # Let subcommands parse the rest of the parameters
         fi
@@ -54,13 +54,13 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${LXQ_COMMAND+x}"; then
+if lxq_is_set "${LXQ_COMMAND+x}"; then
     shift 1
     "${LXQ_COMMAND}" "$@"
     exit "${?}"
 fi
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 

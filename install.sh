@@ -26,7 +26,7 @@ readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly SCRIPT_NAME=$(basename "$0")
 readonly DEPENDENCIES=()
 
-function panic() {
+function lxq_panic() {
     >&2 echo "Fatal: $*"
     exit 1
 }
@@ -36,7 +36,7 @@ function installed() {
 }
 
 for dep in "${DEPENDENCIES[@]}"; do
-    installed "${dep}" || panic "Missing '${dep}'"
+    installed "${dep}" || lxq_panic "Missing '${dep}'"
 done
 
 DEFAULT_CONFIG="${SCRIPT_DIR}/default-config.sh"

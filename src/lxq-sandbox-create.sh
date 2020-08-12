@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-if is_set "${LXQ_SHORT_SUMMARY+x}"; then
+if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     printf "\t\tCreate a sandbox"
     exit 0
 fi
@@ -38,7 +38,7 @@ function parse_commandline() {
                 fi
             ;;
             *)
-                if is_set "${ARG_SANDBOX_NAME+x}"; then
+                if lxq_is_set "${ARG_SANDBOX_NAME+x}"; then
                     echo "Unrecognized argument: ${1}"
                     show_usage_and_exit
                 else
@@ -53,20 +53,20 @@ function parse_commandline() {
 
 parse_commandline "$@"
 
-if is_set "${ARG_HELP+x}"; then
+if lxq_is_set "${ARG_HELP+x}"; then
     show_usage_and_exit
 fi
 
-is_set "${ARG_TEMPLATE_NAME+x}" || panic "No template name specified."
-is_set "${ARG_SANDBOX_NAME+x}" || panic "No sandbox name specified."
+lxq_is_set "${ARG_TEMPLATE_NAME+x}" || lxq_panic "No template name specified."
+lxq_is_set "${ARG_SANDBOX_NAME+x}" || lxq_panic "No sandbox name specified."
 
 template_dir="${LXQ_REPO_DIR}/templates/${ARG_TEMPLATE_NAME}"
-test -d "${template_dir}" || panic "Template ${ARG_TEMPLATE_NAME} does not exist."
+test -d "${template_dir}" || lxq_panic "Template ${ARG_TEMPLATE_NAME} does not exist."
 
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
-test ! -d "${sandbox_dir}" || panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
+test ! -d "${sandbox_dir}" || lxq_panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
 mkdir --parent "${sandbox_dir}/config.d"
-compile_config "${template_dir}/config.d" "${sandbox_dir}/config.d" "${sandbox_dir}/config"
+lxq_compile_config "${template_dir}/config.d" "${sandbox_dir}/config.d" "${sandbox_dir}/config"
 
 sandbox_meta_script="${sandbox_dir}/meta.sh"
 cat > "${sandbox_meta_script}" << EOF
