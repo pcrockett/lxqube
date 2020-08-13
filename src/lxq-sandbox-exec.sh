@@ -89,7 +89,7 @@ fi
 lxc_command=(lxc-attach --name "${sandbox_cont_name}" --clear-env --keep-var TERM -- "${full_command[@]}")
 
 if lxq_is_set "${ARG_BACKGROUND+x}"; then
-    "${lxc_command[@]}" 2&> /dev/null &
+    "${lxc_command[@]}" 2&> /dev/null < /dev/stdin &
 else
     "${lxc_command[@]}"
 fi
