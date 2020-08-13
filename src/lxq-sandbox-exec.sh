@@ -12,9 +12,9 @@ function show_usage() {
     printf "Usage: lxq sandbox exec [sandbox-name] [flags] -- [command]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
-    printf "  -h, --help\t\tShow help message then exit\n" >&2
-    printf "  -r, --root\t\tRun as root\n" >&2
     printf "  -b, --background\tRun in background using nohup\n" >&2
+    printf "  -r, --root\t\tRun as root\n" >&2
+    printf "  -h, --help\t\tShow help message then exit\n" >&2
 }
 
 function show_usage_and_exit() {
@@ -39,7 +39,7 @@ function parse_commandline() {
             ;;
             --)
                 shift 1
-                ARG_COMMAND="${@}"
+                ARG_COMMAND="${*}"
                 return
             ;;
             *)
