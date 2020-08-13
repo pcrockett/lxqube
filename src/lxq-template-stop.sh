@@ -2,17 +2,16 @@
 set -Eeuo pipefail
 
 if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
-    printf "\t\tAttach a terminal to a template"
+    printf "\t\t\tStop a template container"
     exit 0
 fi
 
-lxq_check_dependencies lxc-attach
+lxq_check_dependencies lxc-wait lxc-stop
 
 function show_usage() {
-    printf "Usage: lxq template attach [template-name]\n" >&2
+    printf "Usage: lxq template stop [template-name]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
-    printf "  -u, --user\t\tLogin as sandboxed user\n" >&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
 }
 
@@ -29,9 +28,6 @@ function parse_commandline() {
         case "${1}" in
             -h|-\?|--help)
                 ARG_HELP="true"
-            ;;
-            -u|--user)
-                ARG_USER="true"
             ;;
             *)
                 if lxq_is_set "${ARG_TEMPLATE_NAME+x}"; then
@@ -55,21 +51,16 @@ fi
 
 lxq_is_set "${ARG_TEMPLATE_NAME+x}" || lxq_panic "No template name specified."
 
-lxq_start_net_svc
+container_name="templ-${ARG_TEMPLATE_NAME}"
+lxq_template_root="${LXQ_REPO_DIR}/templates/${ARG_TEMPLATE_NAME}"
+test -d "${lxq_template_root}" || lxq_panic "Template ${ARG_TEMPLATE_NAME} does not exist."
 
-template_dir="${LXQ_TEMPLATES_ROOT_DIR}/${ARG_TEMPLATE_NAME}"
-test -d "${template_dir}" || lxq_panic "Template ${ARG_TEMPLATE_NAME} does not exist."
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    lxq_hook "template/pre-stop"
 
-template_cont_name="templ-${ARG_TEMPLATE_NAME}"
+lxc-stop "${container_name}"
+lxc-wait --name "${container_name}" \
+    --state STOPPED
 
-if lxq_is_set "${ARG_USER+x}"; then
-    lxc-attach --name "${template_cont_name}" \
-        --clear-env \
-        --keep-var TERM \
-        -- \
-        sudo --login --user "${LXQ_CONTAINER_USER}" || true # "|| true" to disregard exit code
-else
-    lxc-attach --name "${template_cont_name}" \
-        --clear-env \
-        --keep-var TERM || true # "|| true" to disregard exit code
-fi
+LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
+    lxq_hook "template/post-stop"
