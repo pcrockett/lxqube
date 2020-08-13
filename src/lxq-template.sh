@@ -55,6 +55,13 @@ function parse_commandline() {
 parse_commandline "$@"
 
 if lxq_is_set "${LXQ_COMMAND+x}"; then
+
+    export LXQ_TEMPLATES_ROOT_DIR="${LXQ_REPO_DIR}/templates"
+
+    if [ ! -d "${LXQ_TEMPLATES_ROOT_DIR}" ]; then
+        mkdir --parent "${LXQ_TEMPLATES_ROOT_DIR}"
+    fi
+
     shift 1
     "${LXQ_COMMAND}" "$@"
     exit "${?}"
