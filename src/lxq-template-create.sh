@@ -115,6 +115,21 @@ EOF
         --state "RUNNING"
 
     lxc-attach --name "${container_name}" \
+            --clear-env \
+            --keep-var TERM \
+            -- \
+            /bin/bash << EOF
+readarray -t home_dirs < <(find /home -maxdepth 1 -mindepth 1 -type d)
+for home_dir in \$home_dirs
+do
+    user_name=\$(basename "\${home_dir}")
+    echo "Deleting user \\"\${user_name}\\"..."
+    /usr/sbin/userdel "\${user_name}"
+    rm --recursive "\${home_dir}"
+done
+EOF
+
+    lxc-attach --name "${container_name}" \
         --clear-env \
         --keep-var TERM \
         -- \
