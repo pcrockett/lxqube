@@ -7,10 +7,11 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
 fi
 
 function show_usage() {
-    printf "Usage: lxq sandbox create [sandbox-name] --template [template-name]\n" >&2
+    printf "Usage: lxq sandbox create [sandbox-name] [flags]\n" >&2
     printf "\n" >&2
     printf "Flags:\n">&2
-    printf "  -t, --template\t\tTemplate on which the sandbox should be based"
+    printf "  -p, --persist-home\tNever discard the home directory\n" >&2
+    printf "  -t, --template\tTemplate on which the sandbox should be based\n" >&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
 }
 
@@ -27,6 +28,9 @@ function parse_commandline() {
         case "${1}" in
              -h|-\?|--help)
                 ARG_HELP="true"
+            ;;
+            -p|--persist-home)
+                ARG_PERSIST_HOME="true"
             ;;
             -t|--template)
                 shift 1
@@ -65,7 +69,24 @@ test -d "${template_dir}" || lxq_panic "Template ${ARG_TEMPLATE_NAME} does not e
 
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test ! -d "${sandbox_dir}" || lxq_panic "Sandbox ${ARG_SANDBOX_NAME} already exists."
-mkdir --parent "${sandbox_dir}/config.d"
+config_dir="${sandbox_dir}/config.d"
+mkdir --parent "${config_dir}"
+
+if lxq_is_set "${ARG_PERSIST_HOME+x}"; then
+
+    lxc_templ_home_root="${LXQ_PATH}/templ-${ARG_TEMPLATE_NAME}/rootfs/home"
+    sandbox_home_root="${sandbox_dir}/home"
+    cp --recursive "${lxc_templ_home_root}" "${sandbox_home_root}"
+
+    # This path doesn't exist yet, but it will be created during `lxq sandbox start`
+    lxc_sbox_home_root="${LXQ_PATH}/sbox-${ARG_SANDBOX_NAME}/rootfs/home"
+
+    persist_home_config="${config_dir}/99_persist_home.conf"
+    cat > "${persist_home_config}" << EOF
+lxc.mount.entry = ${sandbox_home_root} ${lxc_sbox_home_root} none bind 0 0
+EOF
+fi
+
 lxq_compile_config "${template_dir}/config.d" "${sandbox_dir}/config.d" "${sandbox_dir}/config"
 
 sandbox_meta_script="${sandbox_dir}/meta.sh"
