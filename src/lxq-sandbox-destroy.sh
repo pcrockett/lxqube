@@ -51,7 +51,9 @@ lxq_is_set "${ARG_SANDBOX_NAME+x}" || lxq_panic "No sandbox name specified."
 
 sandbox_dir="${LXQ_SANDBOXES_ROOT_DIR}/${ARG_SANDBOX_NAME}"
 test -d "${sandbox_dir}" || lxq_panic "Sandbox ${ARG_SANDBOX_NAME} does not exist."
-rm --recursive -- "${sandbox_dir}"
+
+echo "Removing ${sandbox_dir}..."
+sudo rm --recursive -- "${sandbox_dir}"
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     lxq_hook "sandbox/post-destroy"

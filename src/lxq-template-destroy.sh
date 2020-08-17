@@ -54,7 +54,7 @@ fi
 lxq_is_set "${ARG_TEMPLATE_NAME+x}" || lxq_panic "No template name specified."
 
 lxc-destroy --name "templ-${ARG_TEMPLATE_NAME}"
-rm -r "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
+rm --recursive -- "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
 
 LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
     lxq_hook "template/post-destroy"
