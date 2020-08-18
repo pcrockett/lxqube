@@ -10,7 +10,8 @@ export LXQ_DISTRO="ubuntu"
 export LXQ_RELEASE="xenial"
 export LXQ_ARCH="amd64"
 export LXQ_CONTAINER_USER="sandboxed"
-export LXQ_PATH="/var/lib/lxq/${USER}"
+export LXQ_PATH="/var/lib/lxq/${USER}/container"
+export LXQ_PERSISTED_DIR="/var/lib/lxq/${USER}/persist"
 
 # Configure LXC backing store. Options are "dir", "lvm", "loop", "btrfs",
 # "zfs", "rbd", or "best". See the --bdev parameter in `man lxc-create` for

@@ -71,12 +71,18 @@ $LXC_SYSTEM_CONF_SCRIPT
 
 ln --symbolic "${LXC_SYSTEM_CONF}" "${LXC_CONFIG_DIR}/lxc.conf" || true
 
+function create_owned_dir() {
+    path="${1}"
+    echo "Creating ${path}..."
+    sudo mkdir "${path}" --parent
+    sudo chown "${USER}:${USER}" "${path}"
+    chmod +x "${path}"
+    chmod o-rw "${path}"
+}
+
 if [ ! -d "${LXQ_PATH}" ]; then
-    echo "Creating ${LXQ_PATH}..."
-    sudo mkdir "${LXQ_PATH}" --parent
-    sudo chown "${USER}:${USER}" "${LXQ_PATH}"
-    chmod +x "${LXQ_PATH}"
-    chmod o-rw "${LXQ_PATH}"
+    create_owned_dir "${LXQ_PATH}"
+    create_owned_dir "${LXQ_PERSISTED_DIR}"
 fi
 
 echo "Symlinks in place. Run..."

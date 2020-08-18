@@ -76,15 +76,6 @@ lxq_template_config_file="${lxq_template_root}/config"
 lxc_config="${LXQ_PATH}/${sandbox_cont_name}/config"
 sed -i "s|${lxq_template_config_file}|${sandbox_config_file}|g" "${lxc_config}"
 
-sandbox_home_root="${lxq_sandbox_dir}/home"
-if [ -d "${sandbox_home_root}" ]; then
-    # We have configured this sandbox to have a persistent home. We don't want
-    # the template's home directory that came from the "clone" above. Delete
-    # that directory so our config can mount the one that already exists here.
-    lxc_sbox_home_root="${LXQ_PATH}/sbox-${ARG_SANDBOX_NAME}/rootfs/home"
-    rm --recursive "${lxc_sbox_home_root:?}/*"
-fi
-
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     lxq_hook "sandbox/pre-start"
 
