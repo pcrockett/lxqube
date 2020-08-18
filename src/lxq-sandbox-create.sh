@@ -72,21 +72,6 @@ test ! -d "${sandbox_dir}" || lxq_panic "Sandbox ${ARG_SANDBOX_NAME} already exi
 config_dir="${sandbox_dir}/config.d"
 mkdir --parent "${config_dir}"
 
-if lxq_is_set "${ARG_PERSIST_HOME+x}"; then
-
-    lxc_templ_home_root="${LXQ_PATH}/templ-${ARG_TEMPLATE_NAME}/rootfs/home"
-    sandbox_home_root="${sandbox_dir}/home"
-    cp --recursive "${lxc_templ_home_root}" "${sandbox_home_root}"
-
-    # This path doesn't exist yet, but it will be created during `lxq sandbox start`
-    lxc_sbox_home_root="${LXQ_PATH}/sbox-${ARG_SANDBOX_NAME}/rootfs/home"
-
-    persist_home_config="${config_dir}/99_persist_home.conf"
-    cat > "${persist_home_config}" << EOF
-lxc.mount.entry = ${sandbox_home_root} ${lxc_sbox_home_root} none bind 0 0
-EOF
-fi
-
 lxq_compile_config "${template_dir}/config.d" "${sandbox_dir}/config.d" "${sandbox_dir}/config"
 
 sandbox_meta_script="${sandbox_dir}/meta.sh"
@@ -96,8 +81,11 @@ set -Eeuo pipefail
 
 export LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}"
 EOF
-
 chmod u+x "${sandbox_meta_script}"
+
+if lxq_is_set "${ARG_PERSIST_HOME+x}"; then
+    lxq sandbox persist "${ARG_SANDBOX_NAME}" /home
+fi
 
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
