@@ -23,13 +23,15 @@ set -Eeuo pipefail
 [[ "${BASH_VERSINFO[0]}" -lt 4 ]] && echo "Bash >= 4 required" && exit 1
 
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-readonly SCRIPT_NAME=$(basename "$0")
+# readonly SCRIPT_NAME=$(basename "$0")
 readonly DEPENDENCIES=()
 
 function lxq_panic() {
     >&2 echo "Fatal: $*"
     exit 1
 }
+
+test "$(id --user)" -ne 0 || lxq_panic "You should not run this script as root."
 
 function installed() {
     command -v "$1" >/dev/null 2>&1
@@ -71,11 +73,17 @@ $LXC_SYSTEM_CONF_SCRIPT
 
 ln --symbolic "${LXC_SYSTEM_CONF}" "${LXC_CONFIG_DIR}/lxc.conf" || true
 
+function create_dir_superuser() {
+    echo "Creating ${1} as superuser..."
+    sudo mkdir "${1}" --parent
+    group=$(id --group --name)
+    sudo chown "${USER}:${group}" "${path}"
+}
+
 function create_owned_dir() {
     path="${1}"
     echo "Creating ${path}..."
-    sudo mkdir "${path}" --parent
-    sudo chown "${USER}:${USER}" "${path}"
+    mkdir "${path}" --parent || create_dir_superuser "${path}"
     chmod +x "${path}"
     chmod o-rw "${path}"
 }
@@ -83,6 +91,10 @@ function create_owned_dir() {
 if [ ! -d "${LXQ_PATH}" ]; then
     create_owned_dir "${LXQ_PATH}"
     create_owned_dir "${LXQ_PERSISTED_DIR}"
+fi
+
+if [ ! -d "${SCRIPT_DIR}/plugins" ]; then
+    mkdir "${SCRIPT_DIR}/plugins"
 fi
 
 echo "Symlinks in place. Run..."
