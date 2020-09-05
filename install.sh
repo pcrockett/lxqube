@@ -65,6 +65,12 @@ if [ ! -d "${LXC_CONFIG_DIR}" ]; then
 fi
 
 LXC_CONTAINER_CONF="${SCRIPT_DIR}/lxc/default.conf"
+LXC_CONTAINER_CONF_SCRIPT="${LXC_CONTAINER_CONF}.sh"
+
+# Generate container conf file
+"${LXC_CONTAINER_CONF_SCRIPT}"
+
+# Put the file where LXC will recognize it
 ln --symbolic "${LXC_CONTAINER_CONF}" "${LXC_CONFIG_DIR}/default.conf" || true
 
 LXC_SYSTEM_CONF="${SCRIPT_DIR}/lxc/lxc.conf"
@@ -95,6 +101,20 @@ fi
 
 if [ ! -d "${SCRIPT_DIR}/plugins" ]; then
     mkdir "${SCRIPT_DIR}/plugins"
+fi
+
+uid_map_str="${USER}:${LXQ_SUBUID_START}:${LXQ_SUBUID_COUNT}"
+
+subuid_file="/etc/subuid"
+if [ ! -f "${subuid_file}" ]; then
+    echo "Creating ${subuid_file}..."
+    echo "${uid_map_str}" | sudo tee "${subuid_file}"
+fi
+
+subgid_file="/etc/subgid"
+if [ ! -f "${subgid_file}" ]; then
+    echo "Creating ${subgid_file}..."
+    echo "${uid_map_str}" | sudo tee "${subgid_file}"
 fi
 
 echo "Symlinks in place. Run..."

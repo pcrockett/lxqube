@@ -19,3 +19,6 @@ export LXQ_PERSISTED_DIR="/var/lib/lxq/${USER}/persist"
 # no matter how it's configured. However if you can use Btrfs or ZFS, that is
 # more ideal.
 export LXQ_BACKING_STORE="dir"
+
+export LXQ_SUBUID_START="100000"
+export LXQ_SUBUID_COUNT="65536"
