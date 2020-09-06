@@ -51,6 +51,18 @@ if [ -f "${USER_CONFIG}" ]; then
     . "${USER_CONFIG}"
 fi
 
+subuid_file="/etc/subuid"
+if [ ! -f "${subuid_file}" ]; then
+    echo "Creating ${subuid_file}..."
+    echo "${USER}:100000:65536" | sudo tee "${subuid_file}"
+fi
+
+subgid_file="/etc/subgid"
+if [ ! -f "${subgid_file}" ]; then
+    echo "Creating ${subgid_file}..."
+    echo "${USER}:100000:65536" | sudo tee "${subgid_file}"
+fi
+
 BIN_DIR=~/.local/bin
 if [ ! -d "${BIN_DIR}" ]; then
     mkdir "${BIN_DIR}" --parent
@@ -101,20 +113,6 @@ fi
 
 if [ ! -d "${SCRIPT_DIR}/plugins" ]; then
     mkdir "${SCRIPT_DIR}/plugins"
-fi
-
-uid_map_str="${USER}:${LXQ_SUBUID_START}:${LXQ_SUBUID_COUNT}"
-
-subuid_file="/etc/subuid"
-if [ ! -f "${subuid_file}" ]; then
-    echo "Creating ${subuid_file}..."
-    echo "${uid_map_str}" | sudo tee "${subuid_file}"
-fi
-
-subgid_file="/etc/subgid"
-if [ ! -f "${subgid_file}" ]; then
-    echo "Creating ${subgid_file}..."
-    echo "${uid_map_str}" | sudo tee "${subgid_file}"
 fi
 
 echo "Symlinks in place. Run..."

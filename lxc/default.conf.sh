@@ -25,11 +25,30 @@ set -Eeuo pipefail
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 readonly OUTPUT="${SCRIPT_DIR}/default.conf"
 
+regex="^${USER}:([[:digit:]]+):([[:digit:]]+)\$"
+# Matches strings like "phil:100000:65536"
+
+uid_maps=$(grep --extended-regex "${regex}" /etc/subuid)
+for map in ${uid_maps}; do
+    if [[ "${map}" =~ ${regex} ]]; then
+        uid_start="${BASH_REMATCH[1]}"
+        uid_count="${BASH_REMATCH[2]}"
+    fi
+done
+
+gid_maps=$(grep --extended-regex "${regex}" /etc/subgid)
+for map in ${gid_maps}; do
+    if [[ "${map}" =~ ${regex} ]]; then
+        gid_start="${BASH_REMATCH[1]}"
+        gid_count="${BASH_REMATCH[2]}"
+    fi
+done
+
 cat > "${OUTPUT}" << EOF
 lxc.net.0.type = veth
 lxc.net.0.link = lxcbr0
 lxc.net.0.flags = up
 lxc.net.0.hwaddr = 00:16:3e:xx:xx:xx
-lxc.idmap = u 0 ${LXQ_SUBUID_START} ${LXQ_SUBUID_COUNT}
-lxc.idmap = g 0 ${LXQ_SUBUID_START} ${LXQ_SUBUID_COUNT}
+lxc.idmap = u 0 ${uid_start} ${uid_count}
+lxc.idmap = g 0 ${gid_start} ${gid_count}
 EOF
