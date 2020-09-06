@@ -111,6 +111,27 @@ if [ ! -d "${LXQ_PATH}" ]; then
     create_owned_dir "${LXQ_PERSISTED_DIR}"
 fi
 
+LXC_USERNET_CONFIG="/etc/lxc/lxc-usernet"
+if [ -f "${LXC_USERNET_CONFIG}" ]; then
+    # lxc-usernet settings already exist - let's make sure THIS user has permission to
+    # create network-connected containers:
+
+    if grep --quiet --extended-regexp "^${USER}" "${LXC_USERNET_CONFIG}"; then
+        true # Do nothing - user has already been configured
+    else
+        echo "Adding ${USER} settings to ${LXC_USERNET_CONFIG}..."
+        echo "${USER} veth lxcbr0 20" | sudo tee --append "${LXC_USERNET_CONFIG}"
+    fi
+else
+    # lxc-usernet has not been set up yet. Create the file from scratch.
+    echo "Creating ${LXC_USERNET_CONFIG}..."
+    sudo tee "${LXC_USERNET_CONFIG}" << EOF
+# USERNAME TYPE BRIDGE COUNT
+${USER} veth lxcbr0 20
+EOF
+
+fi
+
 if [ ! -d "${SCRIPT_DIR}/plugins" ]; then
     mkdir "${SCRIPT_DIR}/plugins"
 fi
