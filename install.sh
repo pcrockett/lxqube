@@ -132,6 +132,12 @@ EOF
 
 fi
 
+LXC_NET_CONFIG="/etc/default/lxc-net"
+if [ ! -f "${LXC_NET_CONFIG}" ]; then
+    echo "Creating ${LXC_NET_CONFIG}..."
+    sudo cp "${SCRIPT_DIR}/lxc/lxc-net" "${LXC_NET_CONFIG}"
+fi
+
 if [ ! -d "${SCRIPT_DIR}/plugins" ]; then
     mkdir "${SCRIPT_DIR}/plugins"
 fi
