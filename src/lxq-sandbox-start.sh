@@ -6,7 +6,7 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-lxq_check_dependencies lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy
+lxq_check_dependencies lxc-start lxc-wait lxc-attach lxc-stop lxc-copy lxc-destroy systemd-run
 
 function show_usage() {
     printf "Usage: lxq sandbox start [sandbox-name]\n" >&2
@@ -82,7 +82,10 @@ LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
 lxq_template_config_dir="${lxq_template_root}/config.d"
 lxq_compile_config "${lxq_template_config_dir}" "${sandbox_config_dir}" "${sandbox_config_file}"
 
-lxc-start "${sandbox_cont_name}"
+# To support systemd's newer unified cgroup hierarchy, we have to use systemd-run.
+# See https://wiki.debian.org/LXC/CGroupV2
+systemd-run --user --remain-after-exit --property "Delegate=yes" \
+    lxc-start --name "${sandbox_cont_name}" --foreground
 lxc-wait --name "${sandbox_cont_name}" \
     --state RUNNING
 

@@ -6,7 +6,7 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
     exit 0
 fi
 
-lxq_check_dependencies lxc-start lxc-wait
+lxq_check_dependencies lxc-start lxc-wait systemd-run
 
 function show_usage() {
     printf "Usage: lxq template start [template-name]\n" >&2
@@ -63,7 +63,10 @@ LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
 
 lxq_compile_config "${lxq_template_config_dir}" "${lxq_template_root}/config"
 
-lxc-start "${container_name}"
+# To support systemd's newer unified cgroup hierarchy, we have to use systemd-run.
+# See https://wiki.debian.org/LXC/CGroupV2
+systemd-run --user --remain-after-exit --property "Delegate=yes" \
+    lxc-start --name "${container_name}" --foreground
 lxc-wait --name "${container_name}" \
     --state RUNNING
 
