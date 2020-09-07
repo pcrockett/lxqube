@@ -7,11 +7,11 @@ if lxq_is_set "${LXQ_SHORT_SUMMARY+x}"; then
 fi
 
 function show_usage() {
-    printf "Usage: lxq plugin install [--dir <directory> | --clone <git-url>]\n" >&2
+    printf "Usage: lxq plugin install [--dir <directory> | --git <git-url>]\n" >&2
     printf "\n" >&2
     printf "Available options:\n" >&2
     printf "  -d, --dir\t\tInstall from a directory on your computer\n" >&2
-    printf "  -c, --clone\t\tInstall from a  Git repository\n" >&2
+    printf "  -g, --git\t\tInstall from a  Git repository\n" >&2
     printf "\n" >&2
     printf "Flags:\n" >&2
     printf "  -h, --help\t\tShow help message then exit\n" >&2
@@ -32,8 +32,8 @@ function parse_commandline() {
                 ARG_HELP="true"
             ;;
             -d|--dir)
-                if lxq_is_set "${ARG_CLONE+x}"; then
-                    lxq_panic "Cannot use --dir and --clone arguments together."
+                if lxq_is_set "${ARG_GIT+x}"; then
+                    lxq_panic "Cannot use --dir and --git arguments together."
                 fi
 
                 shift 1
@@ -43,9 +43,9 @@ function parse_commandline() {
 
                 ARG_DIR="${1}"
             ;;
-            -c|--clone)
+            -g|--git)
                 if lxq_is_set "${ARG_DIR+x}"; then
-                    lxq_panic "Cannot use --dir and --clone arguments together."
+                    lxq_panic "Cannot use --dir and --git arguments together."
                 fi
 
                 shift 1
@@ -53,7 +53,7 @@ function parse_commandline() {
                     lxq_panic "No Git URL specified."
                 fi
 
-                ARG_CLONE="${1}"
+                ARG_GIT="${1}"
             ;;
             *)
                 echo "Unrecognized argument: ${1}"
@@ -89,14 +89,14 @@ if lxq_is_set "${ARG_DIR+x}"; then
     test ! -d "${dest_plugin_dir}" || lxq_panic "A plugin called \"${LXQ_PLUGIN_NAME}\" is already installed."
     ln --symbolic "${ARG_DIR}" "${dest_plugin_dir}"
 
-elif lxq_is_set "${ARG_CLONE+x}"; then
+elif lxq_is_set "${ARG_GIT+x}"; then
 
     temp_dir="${LXQ_PLUGIN_DIR}/.temp"
     test ! -d "${temp_dir}" || rm -rf "${temp_dir}"
-    git clone "${ARG_CLONE}" "${temp_dir}"
+    git clone "${ARG_GIT}" "${temp_dir}"
 
     manifest="${temp_dir}/lxq-manifest.sh"
-    test -e "${manifest}" || lxq_panic "No valid lxq-manifest.sh found in ${ARG_CLONE}."
+    test -e "${manifest}" || lxq_panic "No valid lxq-manifest.sh found in ${ARG_GIT}."
 
     # shellcheck source=/dev/null
     . "${manifest}"
