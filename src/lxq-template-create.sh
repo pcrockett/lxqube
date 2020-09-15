@@ -75,6 +75,7 @@ if lxq_is_set "${ARG_CLONE+x}"; then
     parent_container_name="templ-${ARG_CLONE}"
     lxc-copy --name "${parent_container_name}" \
         --newname "${container_name}" \
+        --backingstorage "${LXQ_BACKING_STORE}" \
         --foreground
 
     old_template_root="${LXQ_TEMPLATES_DIR}/${ARG_CLONE}"
