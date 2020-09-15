@@ -7,7 +7,7 @@ set -Eeuo pipefail
 # to override.
 
 export LXQ_DISTRO="ubuntu"
-export LXQ_RELEASE="xenial"
+export LXQ_RELEASE="focal"
 export LXQ_ARCH="amd64"
 export LXQ_CONTAINER_USER="sandboxed"
 export LXQ_PATH="/var/lib/lxq/${USER}/container"

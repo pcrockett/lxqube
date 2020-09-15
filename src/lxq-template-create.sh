@@ -110,7 +110,9 @@ EOF
 
     lxq_start_net_svc
 
-    lxc-start --name "${container_name}"
+    systemd-run --user --remain-after-exit --property "Delegate=yes" \
+        lxc-start --name "${container_name}" --foreground
+
     lxc-wait --name "${container_name}" \
         --state "RUNNING"
 
