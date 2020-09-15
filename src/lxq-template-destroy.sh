@@ -53,7 +53,17 @@ fi
 
 lxq_is_set "${ARG_TEMPLATE_NAME+x}" || lxq_panic "No template name specified."
 
-lxc-destroy --name "templ-${ARG_TEMPLATE_NAME}"
+# I would use lxc-destroy, however it doesn't like to remove the rootfs unless
+# it's specifically mounted with the "user_subvol_rm_allowed" option (for btrfs
+# at least). That would require jumping through hoops like adding to /etc/fstab
+# or manually calling `mount`, etc. Kind of silly if you're already mounting
+# the _parent_ volume with that flag.
+#
+# So we'll just manually delete the container.
+
+container_dir="${LXQ_PATH}/templ-${ARG_TEMPLATE_NAME}"
+lxc-usernsexec -- rm --recursive -- "${container_dir}/rootfs"
+rm --recursive -- "${container_dir}"
 rm --recursive -- "${TEMPLATES_CONFIG_DIR:?}/${ARG_TEMPLATE_NAME:?}"
 
 LXQ_TEMPLATE_NAME="${ARG_TEMPLATE_NAME}" \
