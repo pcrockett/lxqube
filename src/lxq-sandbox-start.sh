@@ -69,7 +69,7 @@ sandbox_cont_name="sbox-${ARG_SANDBOX_NAME}"
 lxc-copy --name "${template_cont_name}" \
     --newname "${sandbox_cont_name}" \
     --foreground \
-    --tmpfs
+    --backingstorage "${LXQ_BACKING_STORE}"
 
 lxq_template_root="${LXQ_REPO_DIR}/templates/${LXQ_TEMPLATE_NAME}"
 lxq_template_config_file="${lxq_template_root}/config"

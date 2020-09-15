@@ -65,4 +65,14 @@ lxc-wait --name "${sandbox_cont_name}" \
 LXQ_SANDBOX_NAME="${ARG_SANDBOX_NAME}" \
     lxq_hook "sandbox/post-stop"
 
-lxc-destroy --name "${sandbox_cont_name}"
+# I would use lxc-destroy, however it doesn't like to remove the rootfs unless
+# it's specifically mounted with the "user_subvol_rm_allowed" option (for btrfs
+# at least). That would require jumping through hoops like adding to /etc/fstab
+# or manually calling `mount`, etc. Kind of silly if you're already mounting
+# the _parent_ volume with that flag.
+#
+# So we'll just manually delete the container.
+
+container_dir="${LXQ_PATH}/${sandbox_cont_name}"
+lxc-usernsexec -- rm --recursive -- "${container_dir}/rootfs"
+rm --recursive -- "${container_dir}"
