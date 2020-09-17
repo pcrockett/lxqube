@@ -6,9 +6,16 @@ set -Eeuo pipefail
 # called "user-config.sh" and re-export the environment variables you want
 # to override.
 
+# For a list of valid distro / release / architecture combinations, see:
+#
+# https://images.linuxcontainers.org/
+#
+# ... or run `lxc-create containername --template download -- --list`
+#
 export LXQ_DISTRO="ubuntu"
 export LXQ_RELEASE="focal"
 export LXQ_ARCH="amd64"
+
 export LXQ_CONTAINER_USER="sandboxed"
 export LXQ_PATH="/var/lib/lxq/${USER}/container"
 export LXQ_PERSISTED_DIR="/var/lib/lxq/${USER}/persist"
